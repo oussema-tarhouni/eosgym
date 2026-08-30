@@ -1,24 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>EOS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="shortcut icon" href="./logo.svg" type="image/x-icon">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="login.css" />
-</head>
-<body class="auth-body">
+<div class="auth-body">
 <div class="auth">
 
   <div class="auth__visual" id="auth-visual">
     <div class="auth__slide-layer" id="auth-slide-layer"></div>
     <div class="auth__scrim"></div>
     <div class="auth__visual-content">
-      <a class="auth__brand" href="index.html">
-      <img src="logo.svg" alt="EOS" height="25" style="display:block;">
+      <a class="auth__brand" routerLink="/">
+      <img src="assets/logo.svg" alt="EOS" height="25" style="display:block;">
       </a>
 
       <div class="auth__caption">
@@ -32,8 +20,8 @@
 
   <div class="auth__panel">
     <div class="auth__navbar">
-      <a class="auth__navbar-brand" href="index.html">
-        <img src="./logo.svg" alt="EOS">
+      <a class="auth__navbar-brand" routerLink="/">
+        <img src="assets/logo.svg" alt="EOS">
       </a>
     </div>
 
@@ -46,7 +34,7 @@
 
       <div class="auth__head">
         <h1>Welcome back</h1>
-        <p>Log in to book classes, track your membership, and keep training. New here? <a href="signup.html">Create an account</a></p>
+        <p>Log in to book classes, track your membership, and keep training. New here? <a routerLink="/signup">Create an account</a></p>
       </div>
 
       <form class="auth-form" id="login-form">
@@ -102,15 +90,4 @@
   </div>
 
 </div>
-
-<script>window.AUTH_SLIDES = [
-  { img: 'https://images.unsplash.com/photo-1541600383005-565c949cf777?auto=format&fit=crop&w=1400&q=80', eyebrow: 'Strength', title: 'Train like the work actually matters', text: 'Free weights, machines, and a floor built for serious lifting — open early, open late.' },
-  { img: 'https://images.unsplash.com/photo-1754257319747-df51c384c0fa?auto=format&fit=crop&w=1400&q=80', eyebrow: 'Pilates', title: 'Balance and control, session after session', text: 'Reformer and mat classes led by instructors who actually watch your form.' },
-  { img: 'https://images.unsplash.com/photo-1517130038641-a774d04afb3c?auto=format&fit=crop&w=1400&q=80', eyebrow: 'Community', title: 'A gym that knows your name', text: 'Group classes, a members-only app, and a front desk that remembers your goals.' },
-];</script>
-<script src="eos-auth.js"></script>
-<script>
-  initFakeSubmit('login-form', 'login-submit', () => { window.location.href = 'eos-fitness-app.html'; });
-</script>
-</body>
-</html>
+</div>

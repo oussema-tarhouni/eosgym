@@ -23,10 +23,10 @@
   margin: 0;
   padding: 0;
 }
-html {
+.page-root, .page-root :host {
   scroll-behavior: smooth;
 }
-body {
+.page-root {
   background: var(--bg);
   color: var(--white);
   font-family: var(--font-body);

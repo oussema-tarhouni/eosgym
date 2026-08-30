@@ -23,14 +23,14 @@
   margin: 0;
   padding: 0;
 }
-html,body {
+.page-root {
   background: var(--bg);
   color: var(--white);
   font-family: 'Poppins',sans-serif;
   -webkit-font-smoothing: antialiased;
   height: 100%;
 }
-body {
+.page-root {
   min-height: 100vh;
   background: var(--bg);
 }

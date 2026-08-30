@@ -16,8 +16,8 @@
   --radius:20px;
 }
 
-html, body.auth-body{ height:100%; }
-body.auth-body{
+html, .auth-body{ height:100%; }
+.auth-body{
   margin:0;
   font-family: 'Poppins';
   color:var(--white);

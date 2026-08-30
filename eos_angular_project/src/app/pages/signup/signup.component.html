@@ -1,24 +1,13 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>EOS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="shortcut icon" href="./logo.svg" type="image/x-icon">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="signup.css" />
-</head>
-<body class="auth-body">
+<div class="auth-body">
+
 <div class="auth">
 
   <div class="auth__visual" id="auth-visual">
     <div class="auth__slide-layer" id="auth-slide-layer"></div>
     <div class="auth__scrim"></div>
     <div class="auth__visual-content">
-      <a class="auth__brand" href="index.html">
-      <img src="logo.svg" alt="EOS" height="25" style="display:block;">
+      <a class="auth__brand" routerLink="/">
+      <img src="assets/logo.svg" alt="EOS" height="25" style="display:block;">
       </a>
 
       <div class="auth__caption">
@@ -32,8 +21,8 @@
 
   <div class="auth__panel">
     <div class="auth__navbar">
-      <a class="auth__navbar-brand" href="index.html">
-        <img src="./logo.svg" alt="EOS">
+      <a class="auth__navbar-brand" routerLink="/">
+        <img src="assets/logo.svg" alt="EOS">
       </a>
     </div>
 
@@ -46,7 +35,7 @@
 
       <div class="auth__head">
         <h1>Create your account</h1>
-        <p>Join EOS to book classes, message your trainer, and track your progress. Already a member? <a href="login.html">Log in</a></p>
+        <p>Join EOS to book classes, message your trainer, and track your progress. Already a member? <a routerLink="/login">Log in</a></p>
       </div>
 
       <form class="auth-form" id="signup-form">
@@ -125,24 +114,4 @@
 
 </div>
 
-<script>window.AUTH_SLIDES = [
-  { img: 'https://images.unsplash.com/photo-1754257319747-df51c384c0fa?auto=format&fit=crop&w=1400&q=80', eyebrow: 'Get started', title: 'Your first rep starts here', text: 'Create a free account and set up your membership in under a minute.' },
-  { img: 'https://images.unsplash.com/photo-1517130038641-a774d04afb3c?auto=format&fit=crop&w=1400&q=80', eyebrow: 'Group classes', text: 'From HIIT to reformer pilates, book your spot before it fills up.', title: 'Classes for every kind of training day' },
-  { img: 'https://images.unsplash.com/photo-1541600383005-565c949cf777?auto=format&fit=crop&w=1400&q=80', eyebrow: 'Stay accountable', title: 'Track workouts, streaks, and personal bests', text: 'Your membership card, class schedule, and progress — all in one place.' },
-];</script>
-<script src="eos-auth.js"></script>
-<script>
-  document.getElementById('su-confirm').addEventListener('input', checkPasswordsMatch);
-  document.getElementById('su-password').addEventListener('input', checkPasswordsMatch);
-  function checkPasswordsMatch() {
-    const pw = document.getElementById('su-password').value;
-    const cf = document.getElementById('su-confirm');
-    const err = document.getElementById('confirm-error');
-    const mismatch = cf.value.length > 0 && cf.value !== pw;
-    cf.classList.toggle('field--invalid', mismatch);
-    err.classList.toggle('field__error--show', mismatch);
-  }
-  initFakeSubmit('signup-form', 'signup-submit', () => { window.location.href = 'eos-fitness-app.html'; });
-</script>
-</body>
-</html>
+</div>

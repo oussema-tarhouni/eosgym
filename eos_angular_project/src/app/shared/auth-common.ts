@@ -1,3 +1,6 @@
+// Ported from eos-auth.js — shared auth page behavior (slideshow, password toggles/strength, fake submit)
+declare const window: any;
+
 const DEFAULT_SLIDES = [
   {
     img: 'https://images.unsplash.com/photo-1541600383005-565c949cf777?auto=format&fit=crop&w=1400&q=80',
@@ -159,9 +162,3 @@ function initFakeSubmit(formId, btnId, onDone) {
     }, 900);
   });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  initAuthSlideshow();
-  initPasswordToggles();
-  initPasswordStrength();
-});
