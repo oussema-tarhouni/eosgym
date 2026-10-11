@@ -1,4 +1,5 @@
 <div class="page-root">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="eos-logo-light" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="2.1641 0.3112 -2.4753 0 0  1.1641 1.3112 -2.4753 0 0  1.1641 0.3112 -1.4753 0 0  0 0 0 1 0"/></filter></svg>
 
 <div class="bg-fixed"></div>
 
@@ -18,17 +19,17 @@
         <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 3V7M16 3V7M4 10H20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         Schedule
       </div>
-      <div class="sb-link" data-target="page-plans">
-        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.7"/></svg>
-        Plans
-      </div>
-      <div class="sb-link" data-target="page-progress">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19H20M8 15L11 11L14 13L19 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Progress
+      <div class="sb-link" data-target="page-store">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 8L5.5 4H18.5L20 8" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 8H20V19C20 19.6 19.6 20 19 20H5C4.4 20 4 19.6 4 19V8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12C9 13.7 10.3 15 12 15C13.7 15 15 13.7 15 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        Store
       </div>
       <div class="sb-link" data-target="page-diet">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 8C9 8 6.5 10.7 6.5 14.5C6.5 18 8.5 21 12 21C15.5 21 17.5 18 17.5 14.5C17.5 10.7 15 8 12 8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8C12 6 13 4.5 15 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         Diet
+      </div>
+      <div class="sb-link" data-target="page-progress">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19H20M8 15L11 11L14 13L19 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Progress
       </div>
       <div class="sb-link" data-target="page-trainers">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M3 20C3 16.7 5.7 14 9 14C12.3 14 15 16.7 15 20M16 8.5C17.2 8.5 18.2 7.5 18.2 6.2C18.2 5 17.2 4 16 4M17 14.2C19.4 14.6 21 16.3 21 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -41,13 +42,52 @@
     </div>
 
     <div class="sb-foot" id="sbLogout">
-      <div class="sb-avatar">SA</div>
+      <div class="sb-avatar" id="sbAvatar">SA</div>
       <div class="sb-foot-info">
-        <div class="sb-foot-name">Sarah Aziz</div>
+        <div class="sb-foot-name" id="sbFootName">Sarah Aziz</div>
         <div class="sb-foot-tier">Gold Member</div>
       </div>
     </div>
   </div>
+
+  <nav class="mobile-tabbar" id="mobileTabbar">
+    <div class="mt-item active" data-action="goTo" data-arg="page-home" (click)="__run($event)">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11V19C20 19.6 19.6 20 19 20H15V14H9V20H5C4.4 20 4 19.6 4 19V11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      <span>Home</span>
+    </div>
+    <div class="mt-item" data-action="goTo" data-arg="page-schedule" (click)="__run($event)">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 3V7M16 3V7M4 10H20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>Schedule</span>
+    </div>
+
+    <div class="mt-center" data-action="toggleMoreMenu" (click)="__run($event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </div>
+
+    <div class="mt-item" data-action="goTo" data-arg="page-progress" (click)="__run($event)">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19H20M8 15L11 11L14 13L19 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Progress</span>
+    </div>
+    <div class="mt-item" data-action="goTo" data-arg="page-profile" (click)="__run($event)">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M5 20C5 16.3 8.1 13.5 12 13.5C15.9 13.5 19 16.3 19 20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>Profile</span>
+    </div>
+
+    <div class="mt-more-panel" id="mtMorePanel">
+      <div class="mt-more-item" data-action="goTo" data-arg="page-plans" (click)="__run($event)">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.7"/></svg>
+        Plans
+      </div>
+      <div class="mt-more-item" data-action="goTo" data-arg="page-diet" (click)="__run($event)">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 8C9 8 6.5 10.7 6.5 14.5C6.5 18 8.5 21 12 21C15.5 21 17.5 18 17.5 14.5C17.5 10.7 15 8 12 8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8C12 6 13 4.5 15 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        Diet
+      </div>
+      <div class="mt-more-item" data-action="goTo" data-arg="page-trainers" (click)="__run($event)">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M3 20C3 16.7 5.7 14 9 14C12.3 14 15 16.7 15 20M16 8.5C17.2 8.5 18.2 7.5 18.2 6.2C18.2 5 17.2 4 16 4M17 14.2C19.4 14.6 21 16.3 21 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Trainers
+      </div>
+    </div>
+  </nav>
 
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
@@ -60,6 +100,7 @@
         <div class="cmeta" id="bookModalMeta"></div>
         <div class="cspots" id="bookModalSpots"></div>
       </div>
+      <div class="book-modal-status" id="bookModalStatus"></div>
       <div class="book-modal-actions">
         <button type="button" class="book-modal-cancel" id="bookModalCancel">Cancel</button>
         <button type="button" class="book-modal-confirm" id="bookModalConfirm">Confirm Spot</button>
@@ -68,9 +109,6 @@
   </div>
 
   <div class="mobile-topbar">
-    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
     <a class="mt-brand" routerLink="/">
       <img src="assets/logo.svg" alt="">
     </a>
@@ -88,12 +126,22 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21L16.65 16.65" stroke-linecap="round"/></svg>
           <input type="text" placeholder="Search classes, trainers...">
         </div>
-        <div class="bell" id="bellBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3C9.5 3 7.5 5 7.5 7.5V11L5.5 14.5H18.5L16.5 11V7.5C16.5 5 14.5 3 12 3Z" stroke="#f5f4f0" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 17.5C9.5 18.9 10.6 20 12 20C13.4 20 14.5 18.9 14.5 17.5" stroke="#f5f4f0" stroke-width="1.6" stroke-linecap="round"/></svg><div class="dot"></div>
+        <div class="bell" id="cartBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 5H6L7.5 15.5C7.6 16.3 8.3 17 9.1 17H18C18.8 17 19.5 16.4 19.6 15.6L21 8H6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20.5" r="1.4" fill="currentColor"/><circle cx="17.5" cy="20.5" r="1.4" fill="currentColor"/></svg>
+          <div class="dot" id="cartDot"></div>
+          <div class="bell-panel" id="cartPanel">
+            <div class="bell-panel-title">Your Cart</div>
+            <div id="cartPanelFeed"><div class="notif-row"><div class="notif-text">Your cart is empty.</div></div></div>
+            <div class="cart-panel-foot" id="cartPanelFoot" style="display:none;">
+              <div class="cart-total-row"><span>Total</span><span id="cartPanelTotal">0 TND</span></div>
+              <button type="button" class="form-save" id="cartCheckoutBtn">Checkout</button>
+            </div>
+          </div>
+        </div>
+        <div class="bell" id="bellBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3C9.5 3 7.5 5 7.5 7.5V11L5.5 14.5H18.5L16.5 11V7.5C16.5 5 14.5 3 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 17.5C9.5 18.9 10.6 20 12 20C13.4 20 14.5 18.9 14.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div class="dot" id="bellDot"></div>
           <div class="bell-panel" id="bellPanel">
             <div class="bell-panel-title">Notifications</div>
-            <div class="notif-row"><span class="notif-dot"></span><div class="notif-text"><b>Reformer Pilates</b> starts in 2 hours — bring a mat.</div></div>
-            <div class="notif-row"><span class="notif-dot"></span><div class="notif-text">Your membership renews in <b>23 days</b>.</div></div>
-            <div class="notif-row"><span class="notif-dot"></span><div class="notif-text">New class added: <b>Sunrise Mat Pilates</b>, Saturdays 7AM.</div></div>
+            <div id="bellPanelFeed"><div class="notif-row"><div class="notif-text">Loading…</div></div></div>
           </div>
         </div>
       </div>
@@ -104,21 +152,21 @@
       <div class="page active" id="page-home">
         <div class="home-grid">
 
-          <div>
+          <div class="home-col-top">
             <div class="membership-card">
               <div class="mc-top">
                 <div>
-                  <div class="mc-tier">GOLD MEMBERSHIP</div>
-                  <div class="mc-sub">Member since 2024 · Auto-renew enabled</div>
+                  <div class="mc-tier" id="mcTier">MEMBERSHIP</div>
+                  <div class="mc-sub" id="mcSub">Member since — · Auto-renew enabled</div>
                 </div>
-                <div class="mc-status">Active</div>
+                <div class="mc-status" id="mcStatus">Active</div>
               </div>
               <div class="mc-bottom">
                 <div class="mc-progress">
-                  <div class="mc-progress-label"><span>Classes used this month</span><b>9 / 12</b></div>
-                  <div class="progress-track"><div class="progress-fill" style="width:75%"></div></div>
+                  <div class="mc-progress-label"><span>Classes used this month</span><b id="mcQuota">— / —</b></div>
+                  <div class="progress-track"><div class="progress-fill" id="mcProgressFill" style="width:0%"></div></div>
                 </div>
-                <div class="mc-renew">Renews on<b>Sept 14, 2026</b></div>
+                <div class="mc-renew">Renews on<b id="mcRenewDate">—</b></div>
               </div>
             </div>
 
@@ -140,109 +188,87 @@
                 <div class="qa-label">Trainers</div>
               </div>
             </div>
-
-            <div class="barbell"><span class="plate small"></span><span class="plate"></span><span></span><span class="plate"></span><span class="plate small"></span></div>
-
-            <div class="section-title">TODAY'S CLASSES</div>
-            <div class="section-link" data-action="goTo" data-arg="page-schedule" (click)="__run($event)">See all</div>
-            <div class="hclass-grid">
-              <div class="hclass-card">
-                <div class="hclass-time">6:30 – 7:15 AM</div>
-                <div class="hclass-name">Reformer Pilates</div>
-                <div class="hclass-meta">with Nour · Studio B</div>
-                <span class="hclass-tag tag-green">4 spots left</span>
-              </div>
-              <div class="hclass-card">
-                <div class="hclass-time">8:00 – 8:45 AM</div>
-                <div class="hclass-name">Strength Circuit</div>
-                <div class="hclass-meta">with Karim · Main Floor</div>
-                <span class="hclass-tag tag-gold">Filling fast</span>
-              </div>
-              <div class="hclass-card">
-                <div class="hclass-time">6:00 – 6:50 PM</div>
-                <div class="hclass-name">Strength Lab</div>
-                <div class="hclass-meta">with Wassim · Weight Room</div>
-                <span class="hclass-tag tag-green">7 spots left</span>
-              </div>
-            </div>
           </div>
 
           <div class="side-col">
-            <div class="widget">
-              <div class="widget-title">This Week</div>
-              <div class="stats-col">
-                <div class="stat-row"><span class="label">Workouts</span><span class="num">4</span></div>
-                <div class="stat-row"><span class="label">Day Streak</span><span class="num">6</span></div>
-                <div class="stat-row"><span class="label">Cal Burned</span><span class="num">3.2k</span></div>
-              </div>
+            <div class="section-title">TODAY'S CLASSES</div>
+            <div class="section-link" data-action="goTo" data-arg="page-schedule" (click)="__run($event)">See all</div>
+            <div class="hclass-grid" id="hclassGrid">
+              <div class="hclass-card"><div class="hclass-meta">Loading…</div></div>
             </div>
 
             <div class="widget">
               <div class="widget-title" style="cursor:pointer" data-action="goTo" data-arg="page-trainers" (click)="__run($event)">Your Trainers</div>
-              <div class="trainer-row">
-                <div class="trainer-avatar">NB</div>
-                <div><div class="trainer-name">Nour Ben Salem</div><div class="trainer-role">Pilates &amp; Core</div></div>
+              <div id="trainerWidget">
+                <div class="trainer-row"><div class="trainer-role">Loading…</div></div>
               </div>
-              <div class="trainer-row">
-                <div class="trainer-avatar">KT</div>
-                <div><div class="trainer-name">Karim Trabelsi</div><div class="trainer-role">Strength &amp; Conditioning</div></div>
-              </div>
-              <div class="trainer-row">
-                <div class="trainer-avatar">WG</div>
-                <div><div class="trainer-name">Wassim Gharbi</div><div class="trainer-role">Strength Coaching</div></div>
-              </div>
-            </div>
-
-            <div class="widget">
-              <div class="widget-title">Notifications</div>
-              <div class="notif-row"><span class="notif-dot"></span><div class="notif-text"><b>Reformer Pilates</b> starts in 2 hours — bring a mat.</div></div>
-              <div class="notif-row"><span class="notif-dot"></span><div class="notif-text">Your membership renews in <b>23 days</b>.</div></div>
-              <div class="notif-row"><span class="notif-dot"></span><div class="notif-text">New class added: <b>Sunrise Mat Pilates</b>, Saturdays 7AM.</div></div>
             </div>
           </div>
 
+          <div class="home-col-rest">
+            <div class="barbell"><span class="plate small"></span><span class="plate"></span><span></span><span class="plate"></span><span class="plate small"></span></div>
+
+            <div class="section-title">ANNOUNCEMENTS</div>
+            <div class="poster-feed" id="posterFeed">
+              <div class="poster-card"><div class="poster-meta">Loading…</div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="page" id="page-store">
+        <div class="section-title">STORE</div>
+        <div class="store-search-row">
+          <div class="store-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21L16.65 16.65" stroke-linecap="round"/></svg>
+            <input type="text" id="storeSearchInput" placeholder="Search products...">
+          </div>
+          <button type="button" class="store-search-go" id="storeSearchGo" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21L16.65 16.65" stroke-linecap="round"/></svg></button>
+        </div>
+        <div class="filter-chips" id="storeFilters">
+          <div class="chip active" data-filter="all">All</div>
+          <div class="chip" data-filter="supplements">Supplements</div>
+          <div class="chip" data-filter="apparel">Apparel</div>
+          <div class="chip" data-filter="accessories">Accessories</div>
+        </div>
+        <div class="store-toolbar">
+          <div class="store-views"><button type="button" id="storeViewList" aria-label="List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button type="button" id="storeViewGrid" class="on" aria-label="Grid"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button></div>
+          <div class="store-count" id="storeCount"></div>
+          <select id="storeSort" class="store-sort"><option value="random">Random</option><option value="asc">Price: low to high</option><option value="desc">Price: high to low</option></select>
+        </div>
+        <div class="store-bar"><span id="storeRange"></span><div class="store-pager"></div></div>
+        <div class="store-grid" id="storeGrid"><div class="product-card">Loading…</div></div>
+        <div class="store-bar"><span></span><div class="store-pager"></div></div>
+      </div>
+
+      <div class="page" id="page-store-search">
+        <div class="store-results-header">
+          <div class="subpage-back" data-action="goTo" data-arg="page-store" (click)="__run($event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Store</div>
+          <div class="store-results-avatar" id="storeResultsAvatar"></div>
+        </div>
+        <div class="store-search-row">
+          <div class="store-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21L16.65 16.65" stroke-linecap="round"/></svg>
+            <input type="text" id="storeResultsSearchInput" placeholder="Search products...">
+          </div>
+          <button type="button" class="store-search-go" aria-label="Filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7H20M8 12H16M11 17H13"/></svg></button>
+        </div>
+        <div class="store-results-count" id="storeResultsCount">Found <span id="storeResultsN">0</span> results</div>
+        <div class="store-masonry">
+          <div class="store-masonry-col" id="storeMasonryColA"></div>
+          <div class="store-masonry-col" id="storeMasonryColB"></div>
         </div>
       </div>
 
       <div class="page" id="page-trainers">
-        <div class="subpage-back" data-action="goTo" data-arg="page-home" (click)="__run($event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Home</div>
         <div class="section-title">OUR TRAINERS</div>
-        <div class="trainers-grid">
-          <div class="trainer-card">
-            <div class="trainer-avatar">NB</div>
-            <div class="trainer-name">Nour Ben Salem</div>
-            <div class="trainer-role">Pilates &amp; Core</div>
-            <div class="trainer-bio">Reformer &amp; mat pilates, posture and core-strength focus.</div>
-            <button type="button" class="trainer-contact-btn" data-action="contactTrainer" data-arg="Nour Ben Salem" (click)="__run($event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg>
-              Contact
-            </button>
-          </div>
-          <div class="trainer-card">
-            <div class="trainer-avatar">KT</div>
-            <div class="trainer-name">Karim Trabelsi</div>
-            <div class="trainer-role">Strength &amp; Conditioning</div>
-            <div class="trainer-bio">Strength circuits and conditioning for every fitness level.</div>
-            <button type="button" class="trainer-contact-btn" data-action="contactTrainer" data-arg="Karim Trabelsi" (click)="__run($event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg>
-              Contact
-            </button>
-          </div>
-          <div class="trainer-card">
-            <div class="trainer-avatar">WG</div>
-            <div class="trainer-name">Wassim Gharbi</div>
-            <div class="trainer-role">Strength Coaching</div>
-            <div class="trainer-bio">Free-weight technique, progressive overload, injury-safe lifting.</div>
-            <button type="button" class="trainer-contact-btn" data-action="contactTrainer" data-arg="Wassim Gharbi" (click)="__run($event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg>
-              Contact
-            </button>
-          </div>
+        <div class="trainers-grid" id="trainersGrid">
+          <div class="trainer-card"><div class="trainer-role">Loading…</div></div>
         </div>
       </div>
 
       <div class="page" id="page-progress">
-        <div class="subpage-back" data-action="goTo" data-arg="page-home" (click)="__run($event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Home</div>
         <div class="section-title">WEIGHT PROGRESS</div>
 
         <div class="diet-summary-widget" id="dietSummaryWidget"></div>
@@ -287,7 +313,6 @@
       </div>
 
       <div class="page" id="page-diet">
-        <div class="subpage-back" data-action="goTo" data-arg="page-home" (click)="__run($event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Home</div>
         <div class="section-title">DIET & MACROS</div>
 
         <div class="diet-layout">
@@ -345,57 +370,13 @@
 
       <div class="page" id="page-schedule">
         <div class="section-title">CLASS SCHEDULE</div>
-        <div class="day-pills">
-          <div class="day-pill"><div class="dname">Mon</div><div class="dnum">10</div></div>
-          <div class="day-pill"><div class="dname">Tue</div><div class="dnum">11</div></div>
-          <div class="day-pill selected"><div class="dname">Wed</div><div class="dnum">12</div></div>
-          <div class="day-pill"><div class="dname">Thu</div><div class="dnum">13</div></div>
-          <div class="day-pill"><div class="dname">Fri</div><div class="dnum">14</div></div>
-          <div class="day-pill"><div class="dname">Sat</div><div class="dnum">15</div></div>
-          <div class="day-pill"><div class="dname">Sun</div><div class="dnum">16</div></div>
+        <div class="day-pills" id="dayPills"></div>
+        <div class="category-chips" id="categoryFilters">
+          <div class="chip active" data-category="all">All</div>
         </div>
 
-        <div class="class-grid">
-          <div class="class-card">
-            <div class="class-time-block"><div class="t1">6:30</div><div class="t2">AM · 45m</div></div>
-            <div class="class-info">
-              <div class="cname">Reformer Pilates</div>
-              <div class="cmeta">Nour Ben Salem · Studio B</div>
-              <div class="cbottom"><span class="cspots ok">4 spots left</span><button class="book-btn">Book</button></div>
-            </div>
-          </div>
-          <div class="class-card">
-            <div class="class-time-block"><div class="t1">8:00</div><div class="t2">AM · 45m</div></div>
-            <div class="class-info">
-              <div class="cname">Strength Circuit</div>
-              <div class="cmeta">Karim Trabelsi · Main Floor</div>
-              <div class="cbottom"><span class="cspots low">2 spots left</span><button class="book-btn">Book</button></div>
-            </div>
-          </div>
-          <div class="class-card">
-            <div class="class-time-block"><div class="t1">12:15</div><div class="t2">PM · 30m</div></div>
-            <div class="class-info">
-              <div class="cname">Express Core</div>
-              <div class="cmeta">Nour Ben Salem · Studio A</div>
-              <div class="cbottom"><span class="cspots ok">9 spots left</span><button class="book-btn">Book</button></div>
-            </div>
-          </div>
-          <div class="class-card">
-            <div class="class-time-block"><div class="t1">6:00</div><div class="t2">PM · 50m</div></div>
-            <div class="class-info">
-              <div class="cname">Strength Lab</div>
-              <div class="cmeta">Wassim Gharbi · Weight Room</div>
-              <div class="cbottom"><span class="cspots ok">7 spots left</span><button class="book-btn booked">Booked ✓</button></div>
-            </div>
-          </div>
-          <div class="class-card">
-            <div class="class-time-block"><div class="t1">7:15</div><div class="t2">PM · 60m</div></div>
-            <div class="class-info">
-              <div class="cname">Mat Pilates Flow</div>
-              <div class="cmeta">Nour Ben Salem · Studio B</div>
-              <div class="cbottom"><span class="cspots low">1 spot left</span><button class="book-btn">Book</button></div>
-            </div>
-          </div>
+        <div class="class-grid" id="scheduleClassGrid">
+          <div class="class-card"><div class="class-info">Loading…</div></div>
         </div>
       </div>
 
@@ -477,10 +458,10 @@
         <div class="section-title">PROFILE &amp; SETTINGS</div>
         <div class="profile-grid" style="margin-top:16px;">
           <div class="profile-card">
-            <div class="avatar-lg">SA</div>
+            <div class="avatar-lg" id="profileAvatarLg">SA</div>
             <div class="profile-name-wrap">
-              <div class="profile-name">Sarah Aziz</div>
-              <div class="profile-tier">Gold Member since 2024</div>
+              <div class="profile-name" id="profileNameText">Sarah Aziz</div>
+              <div class="profile-tier" id="profileTierText">Gold Member since 2024</div>
               <div class="pstat-row">
                 <div class="pstat"><div class="n">128</div><div class="l">Workouts</div></div>
                 <div class="pstat"><div class="n">6</div><div class="l">Streak</div></div>
@@ -515,6 +496,11 @@
               <div class="menu-text">Help &amp; Support</div>
               <div class="menu-arrow">›</div>
             </div>
+            <div class="menu-item" id="themeMenuItem" style="cursor:pointer;">
+              <div class="menu-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" stroke="#e6cc7a" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+              <div class="menu-text">Dark Mode</div>
+              <div class="theme-switch" id="themeSwitch" role="switch" aria-label="Dark mode"></div>
+            </div>
             <div class="menu-item" id="logoutMenuItem" style="cursor:pointer;">
               <div class="menu-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6L4 12L9 18M4 12H16M16 4H19C20.1 4 21 4.9 21 6V18C21 19.1 20.1 20 19 20H16" stroke="#d97d5a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <div class="menu-text logout">Log Out</div>
@@ -539,9 +525,9 @@
             <div class="ep-photo-info"><b>Profile photo</b><span>Tap the camera to update</span></div>
           </div>
 
-          <div class="form-field"><label>Full name</label><input type="text" value="Sarah Aziz" required></div>
-          <div class="form-field"><label>Email</label><input type="email" value="sarah.aziz@email.com" required></div>
-          <div class="form-field"><label>Phone</label><input type="tel" value="+216 22 345 678" required></div>
+          <div class="form-field"><label>Full name</label><input type="text" id="epName" value="Sarah Aziz" required></div>
+          <div class="form-field"><label>Email</label><input type="email" id="epEmail" value="sarah.aziz@email.com" required></div>
+          <div class="form-field"><label>Phone</label><input type="tel" id="epPhone" value="+216 22 345 678" required></div>
 
           <div class="form-divider">Emergency contact</div>
           <div class="form-field"><label>Contact name</label><input type="text" placeholder="e.g. Yasmine Aziz"></div>
@@ -617,6 +603,7 @@
       <div class="page" id="page-notifications">
         <div class="subpage-back" data-action="goTo" data-arg="page-profile" (click)="__run($event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Profile</div>
         <div class="section-title">NOTIFICATIONS</div>
+        <div id="notifFeed" style="margin-top:12px;"></div>
 
         <div class="form-divider" style="margin-top:16px;">Classes</div>
         <div class="notif-group">
@@ -634,7 +621,7 @@
         <div class="form-divider">Delivery</div>
         <div class="notif-group">
           <div class="notif-toggle-row"><div class="nt-text"><b>Push notifications</b><span>On this device</span></div><label class="switch"><input type="checkbox" checked><span class="switch-track"></span></label></div>
-          <div class="notif-toggle-row"><div class="nt-text"><b>Email</b><span>sarah.aziz@email.com</span></div><label class="switch"><input type="checkbox" checked><span class="switch-track"></span></label></div>
+          <div class="notif-toggle-row"><div class="nt-text"><b>Email</b><span>sarah.aziz.gmail.com</span></div><label class="switch"><input type="checkbox" checked><span class="switch-track"></span></label></div>
           <div class="notif-toggle-row"><div class="nt-text"><b>SMS</b><span>+216 22 345 678</span></div><label class="switch"><input type="checkbox"><span class="switch-track"></span></label></div>
         </div>
       </div>
@@ -646,7 +633,7 @@
         <div class="form-divider" style="margin-top:16px;">Contact us</div>
         <div class="help-contact" style="margin-bottom:22px;">
           <a class="help-contact-btn" href="https://wa.me/21671234567" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#8fc25f" stroke-width="1.7"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.7 19L4 20z"/></svg>WhatsApp</a>
-          <a class="help-contact-btn" href="mailto:support@eosfitness.tn"><svg viewBox="0 0 24 24" fill="none" stroke="#e6cc7a" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email us</a>
+          <a class="help-contact-btn" href="mailto:support.eosfitness.tn"><svg viewBox="0 0 24 24" fill="none" stroke="#e6cc7a" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email us</a>
           <a class="help-contact-btn" href="tel:+21671234567"><svg viewBox="0 0 24 24" fill="none" stroke="#e6cc7a" stroke-width="1.7"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg>Call gym</a>
         </div>
 
@@ -722,7 +709,7 @@
           <h3>3. Analytics Cookies</h3>
           <p>Help us understand which features are used most, so we can improve the booking flow and class scheduling. This data is aggregated and not shared for advertising purposes.</p>
           <h3>4. Managing Cookies</h3>
-          <p>You can opt out of analytics cookies anytime by contacting us at support@eosfitness.tn or through the front desk.</p>
+          <p>You can opt out of analytics cookies anytime by contacting us at support eosfitness.tn or through the front desk.</p>
         </div>
       </div>
 

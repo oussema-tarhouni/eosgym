@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "EOS Gym",
+    "slug": "eos-fitness-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "extra": {
+      "apiUrl": "http://localhost:3000/api"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {},
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}

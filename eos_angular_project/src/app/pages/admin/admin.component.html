@@ -1,0 +1,133 @@
+<div class="adm-shell">
+  <aside class="adm-nav">
+    <h2>Admin</h2>
+    <a routerLink="/app" class="adm-back-link">← Back to app</a>
+    <nav>
+      <button *ngFor="let r of resources" class="adm-nav-btn"
+              [class.adm-active]="r.key === active.key && activeSection === 'resource'"
+              (click)="select(r)">{{ r.title }}</button>
+      <button class="adm-nav-btn" [class.adm-active]="activeSection === 'approvals'"
+              (click)="showApprovals()">Approvals</button>
+      <button class="adm-nav-btn" [class.adm-active]="activeSection === 'send'"
+              (click)="showSend()">Send Notification</button>
+    </nav>
+    <div class="adm-stats" *ngIf="stats">
+      <div>Users: {{ stats.users }}</div>
+      <div>Trainers: {{ stats.trainers }}</div>
+      <div>Upcoming classes: {{ stats.upcoming_classes }}</div>
+      <div>Active memberships: {{ stats.active_memberships }}</div>
+      <div>Bookings today: {{ stats.bookings_today }}</div>
+    </div>
+  </aside>
+
+  <main class="adm-main">
+    <div class="adm-header" *ngIf="activeSection === 'resource'">
+      <h1>{{ active.title }}</h1>
+      <button class="adm-btn-primary" (click)="openCreate()">+ Add</button>
+    </div>
+
+    <p class="adm-error" *ngIf="error">{{ error }}</p>
+
+    <ng-container *ngIf="activeSection === 'resource'">
+      <p *ngIf="loading">Loading…</p>
+
+      <table class="adm-table" *ngIf="!loading && rows.length">
+        <thead>
+          <tr>
+            <th *ngFor="let c of active.columns">{{ c }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td *ngFor="let c of active.columns">{{ row[c] }}</td>
+            <td class="adm-row-actions">
+              <button (click)="openEdit(row)">Edit</button>
+              <button class="adm-btn-danger" (click)="remove(row)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!loading && !rows.length">No records.</p>
+    </ng-container>
+
+    <ng-container *ngIf="activeSection === 'send'">
+      <div class="adm-header"><h1>Send Notification</h1></div>
+      <div class="adm-send">
+        <label>Message
+          <textarea [(ngModel)]="notifMessage" name="notifMessage" rows="3" maxlength="500"></textarea>
+        </label>
+        <div class="adm-send-audience">
+          <label><input type="radio" name="aud" value="all" [(ngModel)]="notifAudience" /> All users ({{ notifUsers.length }})</label>
+          <label><input type="radio" name="aud" value="selected" [(ngModel)]="notifAudience" /> Selected users ({{ notifSelected.size }})</label>
+        </div>
+        <div class="adm-send-list" *ngIf="notifAudience === 'selected'">
+          <label *ngFor="let u of notifUsers">
+            <input type="checkbox" [checked]="notifSelected.has(u.id)" (change)="toggleNotifUser(u.id)" />
+            {{ u.name }} — {{ u.email }}
+          </label>
+        </div>
+        <p *ngIf="notifInfo">{{ notifInfo }}</p>
+        <button class="adm-btn-primary" [disabled]="notifSending" (click)="sendNotification()">{{ notifSending ? 'Sending…' : 'Send' }}</button>
+      </div>
+    </ng-container>
+
+    <!-- CHANGED: pending-account approvals -->
+    <ng-container *ngIf="activeSection === 'approvals'">
+      <div class="adm-header"><h1>Pending Approvals</h1></div>
+      <p *ngIf="approvalsLoading">Loading…</p>
+
+      <table class="adm-table" *ngIf="!approvalsLoading && pendingApprovals.length">
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Phone</th><th>Category</th><th>Plan</th><th>Price</th><th>Requested</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of pendingApprovals">
+            <td>{{ row.name }}</td>
+            <td>{{ row.email }}</td>
+            <td>{{ row.phone }}</td>
+            <td>{{ row.preferred_category }}</td>
+            <td>{{ row.plan_name }} ({{ row.duration_months }} mo)</td>
+            <td>{{ row.price }} TND</td>
+            <td>{{ row.requested_at | date:'short' }}</td>
+            <td class="adm-row-actions">
+              <button class="adm-btn-success" (click)="approveUser(row)">Approve</button>
+              <button class="adm-btn-danger" (click)="rejectUser(row)">Reject</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!approvalsLoading && !pendingApprovals.length">No pending requests.</p>
+    </ng-container>
+  </main>
+
+  <div class="adm-modal-backdrop" *ngIf="showForm" (click)="cancelForm()">
+    <div class="adm-modal" (click)="$event.stopPropagation()">
+      <h3>{{ editingId ? 'Edit' : 'Add' }} {{ active.title.slice(0, -1) }}</h3>
+      <form (ngSubmit)="save()">
+        <label *ngFor="let f of active.fields">
+          {{ f.label }}
+          <select *ngIf="f.type === 'select'" [(ngModel)]="formModel[f.key]" [name]="f.key">
+            <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
+          </select>
+          <input *ngIf="f.type === 'checkbox'" type="checkbox" [(ngModel)]="formModel[f.key]" [name]="f.key" />
+          <textarea *ngIf="f.type === 'textarea'" [(ngModel)]="formModel[f.key]" [name]="f.key" rows="3"></textarea>
+          <ng-container *ngIf="f.type === 'image'">
+            <img *ngIf="formModel[f.key + '_url']" [src]="formModel[f.key + '_url']" class="adm-file-preview" />
+            <input type="file" accept="image/*" [name]="f.key" (change)="onFileChange($event, f.key)" />
+          </ng-container>
+          <input *ngIf="!f.type || (f.type !== 'select' && f.type !== 'checkbox' && f.type !== 'textarea' && f.type !== 'image')"
+                 [type]="f.type || 'text'" [(ngModel)]="formModel[f.key]" [name]="f.key" />
+        </label>
+        <div class="adm-modal-actions">
+          <button type="button" class="adm-btn-secondary" (click)="cancelForm()">Cancel</button>
+          <button type="submit" class="adm-btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

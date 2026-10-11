@@ -1,3 +1,5 @@
+// @ts-nocheck
+declare const window: any;
 import { Component, AfterViewInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -8,8 +10,6 @@ import { RouterLink } from '@angular/router';
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css'
 })
-declare const window: any;
-
 export class LandingComponent implements AfterViewInit {
   // Handles data-action/data-arg clicks (replaces original inline onclick="" attributes,
   // which Angular's template compiler disallows for security reasons)
@@ -27,6 +27,14 @@ export class LandingComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    let th = 'light';
+    try { th = localStorage.getItem('theme') || 'light'; } catch {}
+    document.documentElement.setAttribute('data-theme', th);
+    document.getElementById('theme-btn')?.addEventListener('click', () => {
+      const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', n);
+      try { localStorage.setItem('theme', n); } catch {}
+    });
     
     const nav = document.getElementById('nav');
       window.addEventListener('scroll', () => {

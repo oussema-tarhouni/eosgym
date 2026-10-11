@@ -1,5 +1,5 @@
+// @ts-nocheck
 // Ported from eos-auth.js — shared auth page behavior (slideshow, password toggles/strength, fake submit)
-declare const window: any;
 
 const DEFAULT_SLIDES = [
   {
@@ -22,7 +22,7 @@ const DEFAULT_SLIDES = [
   },
 ];
 
-function initAuthSlideshow() {
+export function initAuthSlideshow() {
   const root = document.getElementById('auth-visual');
   if (!root) return;
 
@@ -102,7 +102,7 @@ function initAuthSlideshow() {
 const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A9.6 9.6 0 0 1 12 5c6.4 0 10 7 10 7a15.6 15.6 0 0 1-3.4 4.3M6.7 6.7C4 8.5 2 12 2 12s3.6 7 10 7a9.5 9.5 0 0 0 3.9-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
 
-function initPasswordToggles() {
+export function initPasswordToggles() {
   document.querySelectorAll('.field__toggle').forEach((btn) => {
     btn.innerHTML = EYE_OPEN;
     btn.addEventListener('click', () => {
@@ -126,7 +126,7 @@ function scorePassword(pw) {
   return Math.min(score, 4);
 }
 
-function initPasswordStrength() {
+export function initPasswordStrength() {
   const input = document.getElementById('su-password');
   const bars = document.querySelectorAll('.strength__bar');
   const label = document.getElementById('strength-label');
@@ -145,7 +145,7 @@ function initPasswordStrength() {
   });
 }
 
-function initFakeSubmit(formId, btnId, onDone) {
+export function initFakeSubmit(formId, btnId, onDone) {
   const form = document.getElementById(formId);
   const btn = document.getElementById(btnId);
   if (!form || !btn) return;
@@ -160,5 +160,18 @@ function initFakeSubmit(formId, btnId, onDone) {
       btn.disabled = false;
       if (typeof onDone === 'function') onDone();
     }, 900);
+  });
+}
+
+export function initThemeToggle() {
+  let th = 'light';
+  try { th = localStorage.getItem('theme') || 'light'; } catch {}
+  document.documentElement.setAttribute('data-theme', th);
+  const btn = document.getElementById('theme-btn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', n);
+    try { localStorage.setItem('theme', n); } catch {}
   });
 }

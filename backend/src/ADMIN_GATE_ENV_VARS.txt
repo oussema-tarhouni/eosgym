@@ -1,0 +1,5 @@
+# Add these 4 lines to your eos_env.env — pick your own values.
+ADMIN_GATE_USERNAME=changeme
+ADMIN_GATE_DB_USERNAME=changeme
+ADMIN_GATE_DB_PASSWORD=changeme
+ADMIN_GATE_PASSWORD=changeme
