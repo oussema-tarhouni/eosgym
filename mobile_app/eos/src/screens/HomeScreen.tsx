@@ -1,18 +1,23 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ActivityIndicator, RefreshControl, Image, Linking, Pressable, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ActivityIndicator, RefreshControl, Image, Linking, Pressable, Alert, BackHandler } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useAuth } from '../context/AuthContext';
 import { dashboardApi } from '../api/dashboard';
 import { contentApi } from '../api/content';
-import { colors } from '../theme/colors';
+import { colors, cardShadow, bgGradient, bgLocations } from '../theme/dark';
 import BottomNavBar from '../components/BottomNavBar';
 import ScheduleScreen from './ScheduleScreen';
 import ProgressScreen from './ProgressScreen';
 import DietScreen from './DietScreen';
 import TrainersScreen from './TrainersScreen';
+import MarketplaceScreen from './MarketplaceScreen';
+import TutorialsScreen from './TutorialsScreen';
 import PlansScreen from './PlansScreen';
 import ProfileScreen from './ProfileScreen';
+import NotificationsScreen from './NotificationsScreen';
 import BackButton from '../components/BackButton';
 
 const LEVEL_RANK: Record<string, number> = { initiation: 1, debutant: 2, intermediaire: 3, avancee: 4, expert: 5 };
@@ -20,18 +25,19 @@ const levelKey = (l?: string) => (l || '').toLowerCase().trim();
 
 const QUICK_ACTIONS = [
   { icon: 'calendar', label: 'Book Class', color: colors.goldLight, page: 'schedule' },
-  { icon: 'heart', label: 'Diet', color: '#8fc25f', page: 'diet' },
+  { icon: 'heart', label: 'Diet', color: colors.green, page: 'diet' },
   { icon: 'trending-up', label: 'Progress', color: colors.goldLight, page: 'progress' },
-  { icon: 'users', label: 'Trainers', color: '#8fc25f', page: 'trainers' },
+  { icon: 'users', label: 'Trainers', color: colors.green, page: 'trainers' },
+  { icon: 'shopping-bag', label: 'Shop', color: colors.goldLight, page: 'shop' },
 ];
 
 const EYEBROW: Record<string, string> = {
   home: 'Good morning', schedule: 'Class schedule', progress: 'Home', diet: 'Home',
-  trainers: 'Home', plans: 'Membership', profile: 'Account',
+  trainers: 'Home', plans: 'Membership', shop: 'Marketplace', tutorials: 'Workouts', profile: 'Account', notifications: 'Inbox',
 };
 const TITLE: Record<string, string> = {
   home: '', schedule: 'This Week', progress: 'Weight Progress', diet: 'Diet & Macros',
-  trainers: 'Our Trainers', plans: 'Choose Your Plan', profile: 'Profile & Settings',
+  trainers: 'Our Trainers', plans: 'Choose Your Plan', shop: 'Shop', tutorials: 'Tutorials', profile: 'Profile & Settings', notifications: 'Notifications',
 };
 
 function initials(name: string) {
@@ -60,6 +66,10 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const userRank = LEVEL_RANK[levelKey((user as any)?.level)] || 0;
   const [page, setPage] = useState('home');
+  const [visited, setVisited] = useState<Record<string, boolean>>({ home: true });
+  useEffect(() => { setVisited((v) => (v[page] ? v : { ...v, [page]: true })); }, [page]);
+  const [cart, setCart] = useState({ count: 0, total: 0 });
+  const [bag, setBag] = useState(0);
   const [showNotifs, setShowNotifs] = useState(false);
   const notifAnim = useRef(new Animated.Value(0)).current;
   const [data, setData] = useState<DashboardData | null>(null);
@@ -82,7 +92,8 @@ export default function HomeScreen() {
       ]);
       setData(res);
       setPosters(postersRes.data);
-      setNotifs(notifsRes.data);
+      const hidden: number[] = JSON.parse((await AsyncStorage.getItem('hidden_notifs')) || '[]');
+      setNotifs(notifsRes.data.filter((n: Notif) => !hidden.includes(n.id)));
     } catch (err) {
       console.log('DASHBOARD LOAD ERROR:', err);
       setError('Could not load your dashboard. Pull to refresh to try again.');
@@ -98,6 +109,14 @@ export default function HomeScreen() {
     Animated.timing(fade, { toValue: 1, duration: 240, useNativeDriver: true }).start();
   }, [page]);
 
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (page !== 'home') { setPage('home'); return true; }
+      return false;
+    });
+    return () => sub.remove();
+  }, [page]);
+
   const openNotifs = () => {
     setShowNotifs((v) => {
       const next = !v;
@@ -107,6 +126,12 @@ export default function HomeScreen() {
       }
       return next;
     });
+  };
+
+  const deleteNotif = async (id: number) => {
+    setNotifs((l) => l.filter((n) => n.id !== id));
+    const hidden: number[] = JSON.parse((await AsyncStorage.getItem('hidden_notifs')) || '[]');
+    await AsyncStorage.setItem('hidden_notifs', JSON.stringify([...hidden, id]));
   };
 
   const bookClass = async (id: string) => {
@@ -132,41 +157,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {showNotifs && (
-        <Pressable style={s.blurBackdrop} onPress={() => setShowNotifs(false)}>
-          <Animated.View style={[StyleSheet.absoluteFill, { opacity: notifAnim }]}>
-            <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
-          </Animated.View>
-          <Animated.View
-            style={[
-              s.notifPanel,
-              {
-                opacity: notifAnim,
-                transform: [
-                  { scale: notifAnim.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
-                  { translateY: notifAnim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] }) },
-                ],
-              },
-            ]}
-          >
-            <Pressable onPress={(e) => e.stopPropagation()}>
-              <Text style={s.notifTitle}>Notifications</Text>
-              {notifs.length === 0 && <Text style={s.notifText}>No notifications yet.</Text>}
-              {notifs.map((n) => (
-                <View key={n.id} style={s.notifRow}>
-                  <View style={s.notifDot} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.notifTitleSmall}>{n.title}</Text>
-                    {!!n.description && <Text style={s.notifText}>{n.description}</Text>}
-                  </View>
-                </View>
-              ))}
-            </Pressable>
-          </Animated.View>
-        </Pressable>
-      )}
-
+    <LinearGradient colors={bgGradient} locations={bgLocations} start={{ x: 0, y: 0 }} end={{ x: 0.8, y: 1 }} style={{ flex: 1 }}>
       <ScrollView
         style={s.page}
         contentContainerStyle={s.content}
@@ -185,12 +176,23 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          {page === 'shop' && (
+            <TouchableOpacity
+              style={s.bell}
+              onPress={() => setBag((n) => n + 1)}
+            >
+              <Feather name="shopping-cart" size={18} color={colors.white} />
+              {cart.count > 0 && <View style={s.cartBadge}><Text style={s.cartBadgeText}>{cart.count}</Text></View>}
+            </TouchableOpacity>
+          )}
           <View style={s.bellWrap}>
-            <TouchableOpacity style={s.bell} onPress={openNotifs}>
+            <TouchableOpacity style={s.bell} onPress={() => setPage('notifications')}>
               <Feather name="bell" size={18} color={colors.white} />
               {notifs.length > 0 && <View style={s.dot} />}
             </TouchableOpacity>
 
+          </View>
           </View>
         </View>
 
@@ -201,7 +203,7 @@ export default function HomeScreen() {
           transform: [{ translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
           gap: 20,
         }}>
-        {page === 'home' ? (
+        <View style={page === 'home' ? { gap: 20 } : { display: 'none' }}>
           <>
             {m && (
               <View style={s.membershipCard}>
@@ -246,7 +248,7 @@ export default function HomeScreen() {
                   {!!c.level && <Text style={[s.hclassMeta, locked && { color: colors.goldLight }]}>{c.level}{locked ? ' · locked' : ''}</Text>}
                   {typeof c.spots_left === 'number' && (
                     <View style={[s.hclassTag, c.spots_left > 0 ? s.tagGreen : s.tagGold]}>
-                      <Text style={[s.hclassTagText, { color: c.spots_left > 0 ? '#8fc25f' : colors.goldLight }]}>
+                      <Text style={[s.hclassTagText, { color: c.spots_left > 0 ? colors.green : colors.goldLight }]}>
                         {c.spots_left > 0 ? `${c.spots_left} spots` : 'Full'}
                       </Text>
                     </View>
@@ -291,26 +293,23 @@ export default function HomeScreen() {
               </>
             )}
           </>
-        ) : page === 'schedule' ? (
-          <ScheduleScreen onBack={() => setPage('home')} />
-        ) : page === 'progress' ? (
-          <ProgressScreen onBack={() => setPage('home')} />
-        ) : page === 'diet' ? (
-          <DietScreen onBack={() => setPage('home')} />
-        ) : page === 'trainers' ? (
-          <TrainersScreen onBack={() => setPage('home')} />
-        ) : page === 'plans' ? (
-          <PlansScreen onBack={() => setPage('home')} />
-        ) : page === 'profile' ? (
-          <ProfileScreen onBack={() => setPage('home')} />
-        ) : null}
+        </View>
+        {visited.schedule && <View style={page === 'schedule' ? { gap: 20 } : { display: 'none' }}><ScheduleScreen onBack={() => setPage('home')} /></View>}
+        {visited.progress && <View style={page === 'progress' ? { gap: 20 } : { display: 'none' }}><ProgressScreen onBack={() => setPage('home')} /></View>}
+        {visited.diet && <View style={page === 'diet' ? { gap: 20 } : { display: 'none' }}><DietScreen onBack={() => setPage('home')} /></View>}
+        {visited.trainers && <View style={page === 'trainers' ? { gap: 20 } : { display: 'none' }}><TrainersScreen onBack={() => setPage('home')} /></View>}
+        {visited.shop && <View style={page === 'shop' ? { gap: 20 } : { display: 'none' }}><MarketplaceScreen bagSignal={bag} onBack={() => setPage('home')} onCartChange={(count, total) => setCart({ count, total })} /></View>}
+        {visited.tutorials && <View style={page === 'tutorials' ? { gap: 20 } : { display: 'none' }}><TutorialsScreen /></View>}
+        {visited.plans && <View style={page === 'plans' ? { gap: 20 } : { display: 'none' }}><PlansScreen onBack={() => setPage('home')} /></View>}
+        {visited.notifications && <View style={page === 'notifications' ? { gap: 20 } : { display: 'none' }}><NotificationsScreen notifs={notifs} onDelete={deleteNotif} /></View>}
+        {visited.profile && <View style={page === 'profile' ? { gap: 20 } : { display: 'none' }}><ProfileScreen onBack={() => setPage('home')} /></View>}
         </Animated.View>
 
-        <View style={{ height: 90 }} />
+        <View style={{ height: 130 }} />
       </ScrollView>
 
       <BottomNavBar active={page} onSelect={setPage} />
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -324,15 +323,17 @@ const s = StyleSheet.create({
   levelBadgeText: { color: '#7fa8f0', fontSize: 10, fontWeight: '700', letterSpacing: 0.4 },
   bellWrap: { position: 'relative', zIndex: 50, elevation: 50 },
   blurBackdrop: { ...StyleSheet.absoluteFillObject, zIndex: 100, elevation: 100 },
-  bell: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.charcoal, alignItems: 'center', justifyContent: 'center' },
-  dot: { position: 'absolute', top: 8, right: 9, width: 7, height: 7, borderRadius: 4, backgroundColor: colors.gold },
+  bell: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#3b3a36', alignItems: 'center', justifyContent: 'center' },
+  cartBadge: { position: 'absolute', top: -4, right: -4, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: colors.goldLight, alignItems: 'center', justifyContent: 'center' },
+  cartBadgeText: { color: colors.black, fontSize: 10, fontWeight: '800' },
+  dot: { position: 'absolute', top: 11, right: 12, width: 7, height: 7, borderRadius: 4, backgroundColor: colors.gold },
   errorBanner: { color: '#e5484d', fontSize: 12.5 },
 
   notifPanel: {
     position: 'absolute', top: 102, right: 20, width: 260,
     backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line,
-    borderRadius: 16, padding: 14, gap: 10, zIndex: 999, elevation: 20,
-    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
+    borderRadius: 16, padding: 20, gap: 14, zIndex: 999, elevation: 20,
+    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
   },
   notifTitle: { color: colors.white, fontWeight: '700', fontSize: 13, marginBottom: 2 },
   notifRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
@@ -340,31 +341,29 @@ const s = StyleSheet.create({
   notifTitleSmall: { color: colors.white, fontWeight: '700', fontSize: 12.5 },
   notifText: { flex: 1, color: colors.gray, fontSize: 12, lineHeight: 17 },
 
-  membershipCard: { borderRadius: 20, padding: 22, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: 'rgba(201,162,39,0.25)' },
+  membershipCard: { borderRadius: 20, padding: 22, backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: 'rgba(201,162,39,0.25)' },
   mcTop: { flexDirection: 'column', alignItems: 'flex-start', gap: 8 },
   mcTier: { color: colors.goldLight, fontSize: 19, fontWeight: '700', letterSpacing: 0.5, maxWidth: '99%' },
   mcSub: { color: colors.gray, fontSize: 12, marginTop: 4, maxWidth: 210 },
-  mcStatus: { alignSelf: 'flex-start', backgroundColor: 'rgba(143,194,95,0.15)', borderWidth: 1, borderColor: 'rgba(143,194,95,0.4)', borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12, marginTop: 2 },
-  mcStatusText: { color: '#8fc25f', fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   mcBottom: { marginTop: 20 },
   mcProgressLabel: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   mcProgressLabelText: { color: colors.gray, fontSize: 11.5 },
   mcProgressLabelBold: { color: colors.white, fontWeight: '700', fontSize: 11.5 },
-  progressTrack: { height: 6, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
+  progressTrack: { height: 6, borderRadius: 6, backgroundColor: 'rgba(245,244,240,0.07)', overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 6, backgroundColor: colors.gold },
   mcRenew: { color: colors.gray, fontSize: 11.5, marginTop: 14 },
   mcRenewBold: { color: colors.white, fontWeight: '700' },
 
   quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  qaItem: { flexBasis: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 13 },
-  qaIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
+  qaItem: { flexBasis: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 13 },
+  qaIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(245,244,240,0.07)', alignItems: 'center', justifyContent: 'center' },
   qaLabel: { color: colors.white, fontWeight: '700', fontSize: 12 },
 
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitle: { color: colors.white, fontSize: 15, fontWeight: '600', letterSpacing: 0.4 },
   sectionLink: { color: colors.goldLight, fontSize: 12, fontWeight: '700' },
 
-  hclassCard: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, width: 220, marginRight: 12, gap: 4 },
+  hclassCard: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, width: 220, marginRight: 12, gap: 4 },
   hclassTime: { color: colors.goldLight, fontSize: 11, fontWeight: '700' },
   hclassName: { color: colors.white, fontSize: 15, fontWeight: '600', marginTop: 4 },
   hclassMeta: { color: colors.gray, fontSize: 11 },
@@ -373,11 +372,11 @@ const s = StyleSheet.create({
   tagGold: { backgroundColor: 'rgba(201,162,39,0.15)', borderWidth: 1, borderColor: 'rgba(201,162,39,0.35)' },
   hclassTagText: { fontSize: 10, fontWeight: '700' },
 
-  widget: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 20, padding: 18 },
+  widget: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 20, padding: 18 },
   widgetTitle: { color: colors.white, fontSize: 14.5, fontWeight: '600', marginBottom: 12 },
   trainerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9 },
-  trainerRowBorder: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
-  trainerAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
+  trainerRowBorder: { borderTopWidth: 1, borderTopColor: 'rgba(245,244,240,0.07)' },
+  trainerAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(245,244,240,0.07)', alignItems: 'center', justifyContent: 'center' },
   trainerAvatarText: { color: colors.goldLight, fontWeight: '700', fontSize: 12.5 },
   trainerName: { color: colors.white, fontSize: 12.5, fontWeight: '700' },
   trainerRole: { color: colors.gray, fontSize: 11 },
@@ -387,7 +386,7 @@ const s = StyleSheet.create({
   plate: { width: 5, height: 14, backgroundColor: colors.gold, borderRadius: 2, marginHorizontal: 3 },
   plateSmall: { height: 9, opacity: 0.7 },
 
-  posterCard: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, gap: 8 },
+  posterCard: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, gap: 8 },
   posterHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   posterLogo: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#100c02', alignItems: 'center', justifyContent: 'center' },
   posterUser: { color: colors.white, fontSize: 13, fontWeight: '600' },

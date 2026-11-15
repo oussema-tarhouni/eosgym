@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, Pressable } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
+import { AuthShell, AuthHeader, Enter, ui } from '../components/AuthUI';
 
 // Ported from pending.component: polls GET /api/auth/me every 15s until
 // status === 'approved'. Angular navigated to /dashboard here (a route that
@@ -22,23 +23,23 @@ export default function PendingScreen() {
   }, []);
 
   return (
-    <View style={s.screen}>
-      <View style={s.card}>
-        <Text style={s.h1}>Your account is pending approval</Text>
-        <Text style={s.sub}>Thanks for signing up! Our team is reviewing your registration. You'll be able to log in as soon as an admin confirms your account.</Text>
-        <TouchableOpacity style={s.btn} onPress={() => logout()}>
-          <Text style={s.btnText}>Log out</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <AuthShell>
+      <AuthHeader
+        icon="clock"
+        title="Your account is pending approval"
+        sub="Thanks for signing up! Our team is reviewing your registration. You'll be able to log in as soon as an admin confirms your account."
+      />
+      <Enter i={1}>
+        <Pressable
+          onPress={() => logout()}
+          style={({ pressed }) => ({
+            height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center',
+            backgroundColor: ui.fill, opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <Text style={{ color: colors.charcoal, fontSize: 16, fontWeight: '700' }}>Log out</Text>
+        </Pressable>
+      </Enter>
+    </AuthShell>
   );
 }
-
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  card: { alignItems: 'center', gap: 12, maxWidth: 340 },
-  h1: { fontSize: 20, color: colors.white, textAlign: 'center', fontWeight: '600' },
-  sub: { color: colors.gray, fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  btn: { marginTop: 8, borderWidth: 1.5, borderColor: colors.line, borderRadius: 13, paddingVertical: 13, paddingHorizontal: 24 },
-  btnText: { color: colors.white, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
-});

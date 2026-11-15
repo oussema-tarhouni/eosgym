@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
+import { colors, cardShadow } from '../theme/dark';
 import { useAuth } from '../context/AuthContext';
 import PlansScreen from './PlansScreen';
 
@@ -64,7 +64,7 @@ export default function ProfileScreen({ onBack }: { onBack: () => void }) {
 const s = StyleSheet.create({
   back: { color: colors.gray, fontSize: 13 },
   title: { color: colors.white, fontSize: 20, fontWeight: '700' },
-  card: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 20, alignItems: 'center', gap: 4, marginTop: 10 },
+  card: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 20, alignItems: 'center', gap: 4, marginTop: 10 },
   avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(201,162,39,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   avatarText: { color: colors.goldLight, fontWeight: '700', fontSize: 20 },
   name: { color: colors.white, fontSize: 17, fontWeight: '700' },
@@ -73,8 +73,8 @@ const s = StyleSheet.create({
   stat: { alignItems: 'center' },
   statN: { color: colors.white, fontSize: 15, fontWeight: '700' },
   statL: { color: colors.gray, fontSize: 10.5, marginTop: 2 },
-  menu: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 18, overflow: 'hidden' },
-  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
+  menu: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 18, overflow: 'hidden' },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: 'rgba(245,244,240,0.07)' },
   menuText: { flex: 1, color: colors.white, fontSize: 13.5, fontWeight: '500' },
   arrow: { color: colors.gray, fontSize: 18 },
 });

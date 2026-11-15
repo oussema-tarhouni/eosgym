@@ -25,6 +25,6 @@ export default function SplashScreen() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+  screen: { flex: 1, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
   logo: { width: 150.01, height: 38.01 },
 });

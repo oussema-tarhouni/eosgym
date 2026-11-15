@@ -5,6 +5,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { dashboardApi } from '../api/dashboard';
 import { useAuth } from '../context/AuthContext';
+import { colors, cardShadow } from '../theme/dark';
 
 const LEVEL_RANK: Record<string, number> = { initiation: 1, debutant: 2, intermediaire: 3, avancee: 4, expert: 5 };
 const levelKey = (l?: string) => (l || '').toLowerCase().trim();
@@ -20,11 +21,7 @@ function fmtHM(d: Date): string {
 function fmtAmPm(d: Date): string { return d.getUTCHours() >= 12 ? 'PM' : 'AM'; }
 function fmtWeekday(d: Date): string { return d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }); }
 
-const C = {
-  bg: '#0e0e0d', charcoal: '#161613', charcoal2: '#1f1e1a',
-  gold: '#c9a227', goldLight: '#e6cc7a', green: '#6a9a44', greenLight: '#8fc25f',
-  white: '#f5f4f0', gray: '#9a988d', grayDim: '#605e54', line: 'rgba(245,244,240,0.08)',
-};
+const C = colors;
 
 type ClassItem = {
   id: string; name: string; trainer: string; location: string;
@@ -339,12 +336,12 @@ export default function ScheduleScreen({ onBack }: { onBack?: () => void }) {
 const NOTCH = 12;
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.bg, padding: 16 },
+  screen: { flex: 1, backgroundColor: 'transparent', padding: 16 },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginBottom: 4 },
   rangeBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingVertical: 7, paddingHorizontal: 12, borderRadius: 20,
-    backgroundColor: C.charcoal, borderWidth: 1, borderColor: 'rgba(201,162,39,0.35)',
+    backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: 'rgba(201,162,39,0.35)',
   },
   rangeBtnText: { color: C.goldLight, fontSize: 11.5, fontWeight: '700' },
   backBtn: { flexDirection: 'row', alignItems: 'center' },
@@ -381,7 +378,7 @@ const styles = StyleSheet.create({
   empty: { color: C.gray, textAlign: 'center', marginTop: 20 },
 
   card: {
-    backgroundColor: C.charcoal, borderWidth: 1, borderColor: C.line,
+    backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: C.line,
     borderRadius: 18,
     paddingVertical: 16, paddingHorizontal: 18,
   },
@@ -423,7 +420,7 @@ const styles = StyleSheet.create({
   lockedText: { color: C.goldLight, fontSize: 11.5, fontWeight: '600' },
 
   calBox: {
-    width: '100%', maxWidth: 460, backgroundColor: C.charcoal,
+    width: '100%', maxWidth: 460, backgroundColor: colors.charcoal2, ...cardShadow,
     borderRadius: 22, borderWidth: 1, borderColor: C.line, padding: 28,
   },
   calHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 },
@@ -451,7 +448,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', padding: 24,
   },
   modalBox: {
-    width: '100%', maxWidth: 380, backgroundColor: C.charcoal,
+    width: '100%', maxWidth: 380, backgroundColor: colors.charcoal2, ...cardShadow,
     borderRadius: 18, borderWidth: 1, borderColor: C.line,
     padding: 22,
   },

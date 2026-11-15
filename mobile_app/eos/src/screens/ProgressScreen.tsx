@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
+import { colors, cardShadow } from '../theme/dark';
 
 const MEAL_PLAN = [
   { name: 'Breakfast', item: 'Oats, banana & whey protein', kcal: 420 },
@@ -35,7 +35,7 @@ export default function ProgressScreen({ onBack }: { onBack: () => void }) {
     <View style={{ gap: 16 }}>
       <View style={s.statsRow}>
         <View style={s.stat}><Text style={s.statN}>{last}kg</Text><Text style={s.statL}>Current</Text></View>
-        <View style={s.stat}><Text style={[s.statN, { color: last < first ? '#8fc25f' : colors.goldLight }]}>{change}kg</Text><Text style={s.statL}>Change</Text></View>
+        <View style={s.stat}><Text style={[s.statN, { color: last < first ? colors.green : colors.goldLight }]}>{change}kg</Text><Text style={s.statL}>Change</Text></View>
         <View style={s.stat}><Text style={s.statN}>{log.length}</Text><Text style={s.statL}>Entries</Text></View>
       </View>
 
@@ -98,10 +98,10 @@ const s = StyleSheet.create({
   back: { color: colors.gray, fontSize: 13 },
   title: { color: colors.white, fontSize: 20, fontWeight: '700' },
   statsRow: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  stat: { flex: 1, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 12, alignItems: 'center' },
+  stat: { flex: 1, backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 12, alignItems: 'center' },
   statN: { color: colors.white, fontSize: 16, fontWeight: '700' },
   statL: { color: colors.gray, fontSize: 10.5, marginTop: 2 },
-  widget: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 16, gap: 10 },
+  widget: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 16, gap: 10 },
   widgetTitle: { color: colors.white, fontSize: 14, fontWeight: '600' },
   chartRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, height: 100, paddingTop: 10 },
   barCol: { alignItems: 'center', gap: 6 },
@@ -111,11 +111,11 @@ const s = StyleSheet.create({
   input: { flex: 1, backgroundColor: colors.bg, borderWidth: 1, borderColor: colors.line, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, color: colors.white },
   saveBtn: { backgroundColor: colors.gold, borderRadius: 12, paddingHorizontal: 18, justifyContent: 'center' },
   saveBtnText: { color: colors.black, fontWeight: '700', fontSize: 13 },
-  logRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
+  logRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderTopWidth: 1, borderTopColor: 'rgba(245,244,240,0.07)' },
   logDate: { color: colors.gray, fontSize: 12 },
   logWeight: { color: colors.white, fontSize: 12, fontWeight: '700' },
   sectionTitle: { color: colors.white, fontSize: 15, fontWeight: '600', letterSpacing: 0.4 },
-  mealCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 14 },
+  mealCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 14 },
   mealName: { color: colors.goldLight, fontSize: 12, fontWeight: '700' },
   mealItem: { color: colors.white, fontSize: 13, marginTop: 2 },
   mealKcal: { color: colors.gray, fontSize: 12 },

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, ScrollView, Linking } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { dashboardApi } from '../api/dashboard';
-import { colors } from '../theme/colors';
+import { colors, cardShadow } from '../theme/dark';
 
 type Trainer = { id: number; name: string; specialty: string; bio?: string };
 
@@ -81,8 +81,8 @@ const s = StyleSheet.create({
   back: { color: colors.gray, fontSize: 13 },
   title: { color: colors.white, fontSize: 20, fontWeight: '700', marginTop: 8 },
   errorBanner: { color: '#e5484d', fontSize: 12.5, marginTop: 8 },
-  card: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16 },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
+  card: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16 },
+  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(245,244,240,0.07)', alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: colors.goldLight, fontWeight: '700', fontSize: 14 },
   name: { color: colors.white, fontSize: 14, fontWeight: '700' },
   role: { color: colors.goldLight, fontSize: 11.5, marginTop: 2 },

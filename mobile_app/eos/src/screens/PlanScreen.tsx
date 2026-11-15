@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { authApi } from '../api/auth';
 import { colors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { cardShadow } from '../theme/light';
+import { AuthShell, AuthHeader, ErrorBanner, PrimaryButton, Enter, ui } from '../components/AuthUI';
 
 interface Tier { key: number; planId: number | null; label: string; price: number; }
 interface Group { title: string; tiers: Tier[]; note?: string; }
@@ -122,11 +124,10 @@ export default function PlanScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={s.screen}>
-      <View style={s.card}>
-        <Text style={s.h1}>Choose your plan</Text>
-        <Text style={s.sub}>Membership is activated once the admin approves your account</Text>
+    <AuthShell>
+      <AuthHeader title="Choose your plan" sub="Membership is activated once the admin approves your account" />
 
+      <Enter i={1} style={{ gap: 14 }}>
         <View style={s.tabs}>
           {categories.map((c) => (
             <TouchableOpacity key={c.key} style={[s.tab, activeCategory.key === c.key && s.tabActive]} onPress={() => setCategory(c)}>
@@ -152,37 +153,30 @@ export default function PlanScreen() {
           </View>
         ))}
 
-        {!!error && <Text style={s.error}>{error}</Text>}
+        {!!error && <ErrorBanner text={error} />}
+      </Enter>
 
-        <TouchableOpacity style={[s.submit, loading && { opacity: 0.6 }]} onPress={confirm} disabled={loading}>
-          {loading ? <ActivityIndicator color={colors.black} /> : <Text style={s.submitText}>Confirm & Submit</Text>}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      <Enter i={2}>
+        <PrimaryButton label="Confirm & Submit" onPress={confirm} loading={loading} />
+      </Enter>
+    </AuthShell>
   );
 }
 
 const s = StyleSheet.create({
-  screen: { flexGrow: 1, backgroundColor: colors.bg, paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40 },
-  card: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 6 },
-  h1: { fontSize: 24, color: colors.white, fontWeight: '400' },
-  sub: { fontSize: 13.5, color: colors.gray, marginBottom: 12 },
-  tabs: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  tab: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.charcoal },
-  tabActive: { backgroundColor: colors.goldLight, borderColor: colors.goldLight },
-  tabText: { color: colors.white, fontWeight: '600', fontSize: 13.5 },
-  tabTextActive: { color: '#1a1a1a' },
-  group: { borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.charcoal, borderRadius: 12, padding: 16, marginBottom: 12 },
-  groupTitle: { color: colors.goldLight, fontSize: 13, fontWeight: '700', marginBottom: 8 },
-  groupNote: { color: colors.gray, fontSize: 11.5, marginTop: 8 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: colors.line },
-  rowActive: { backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 6 },
+  tabs: { flexDirection: 'row', gap: 8 },
+  tab: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999, backgroundColor: ui.fill },
+  tabActive: { backgroundColor: colors.gold },
+  tabText: { color: colors.gray, fontWeight: '700', fontSize: 14 },
+  tabTextActive: { color: '#fff' },
+  group: { backgroundColor: '#ffffff', ...cardShadow, borderRadius: 16, padding: 16 },
+  groupTitle: { color: colors.charcoal, fontSize: 13, fontWeight: '800', letterSpacing: 0.4, marginBottom: 6 },
+  groupNote: { color: colors.gray, fontSize: 12, marginTop: 10 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(22,22,19,0.07)' },
+  rowActive: { backgroundColor: 'rgba(201,162,39,0.16)', borderRadius: 10, borderBottomColor: 'transparent' },
   rowDisabled: { opacity: 0.4 },
-  rowLabel: { color: colors.gray, fontSize: 13.5 },
-  rowLabelActive: { color: colors.white },
-  rowPrice: { color: colors.white, fontWeight: '700', fontSize: 14 },
-  rowPriceActive: { color: colors.goldLight },
-  error: { color: '#e0355a', fontSize: 11.5, marginVertical: 8 },
-  submit: { backgroundColor: colors.gold, borderRadius: 13, padding: 13, alignItems: 'center', marginTop: 8 },
-  submitText: { color: colors.black, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
+  rowLabel: { color: colors.gray, fontSize: 14.5 },
+  rowLabelActive: { color: colors.charcoal, fontWeight: '600' },
+  rowPrice: { color: colors.charcoal, fontWeight: '700', fontSize: 15 },
+  rowPriceActive: { color: '#a8841a' },
 });

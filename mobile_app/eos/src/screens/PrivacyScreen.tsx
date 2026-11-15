@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '../theme/colors';
-import BackButton from '../components/backbtnforspecific';
-
+import { AuthShell, AuthHeader, Enter } from '../components/AuthUI';
 
 const SECTIONS = [
   { title: 'The short version', body: "We collect what we need to run your membership and bookings well, we never sell your data, and you can always ask to see, fix, or delete what we hold on you. The details are below." },
@@ -19,36 +18,16 @@ const SECTIONS = [
 export default function PrivacyScreen() {
   const navigation = useNavigation<any>();
   return (
-    <ScrollView contentContainerStyle={s.screen} bounces={false}>
-      <View style={s.card}>
-        <View style={s.ring} />
-
-        <View style={s.back}>
-          <BackButton onPress={() => navigation.goBack()} />
-        </View>
-
-        <Text style={s.h1}>Privacy Policy</Text>
-        <Text style={s.sub}>How EOS Fitness & Pilates collects, uses, and protects your data.</Text>
-
+    <AuthShell onBack={() => navigation.goBack()}>
+      <AuthHeader title="Privacy Policy" sub="How EOS Fitness & Pilates collects, uses, and protects your data." />
+      <Enter i={1} style={{ gap: 20 }}>
         {SECTIONS.map((sec) => (
-          <View key={sec.title} style={s.section}>
-            <Text style={s.sectionTitle}>{sec.title}</Text>
-            <Text style={s.body}>{sec.body}</Text>
+          <View key={sec.title} style={{ gap: 6 }}>
+            <Text style={{ color: colors.charcoal, fontSize: 17, fontWeight: '800' }}>{sec.title}</Text>
+            <Text style={{ color: colors.gray, fontSize: 16, lineHeight: 25 }}>{sec.body}</Text>
           </View>
         ))}
-      </View>
-    </ScrollView>
+      </Enter>
+    </AuthShell>
   );
 }
-
-const s = StyleSheet.create({
-  screen: { flexGrow: 1, backgroundColor: colors.charcoal },
-  card: { flex: 1, width: '100%', backgroundColor: colors.charcoal, padding: 24, paddingTop: 110, gap: 18, overflow: 'hidden' },
-  ring: { position: 'absolute', top: -60, right: -70, width: 220, height: 220, borderRadius: 110, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
-  back: { position: 'absolute', top: 60, left: 24, zIndex: 2 },
-  h1: { color: colors.white, fontSize: 24, fontWeight: '700', marginTop: '30px' },
-  sub: { color: colors.gray, fontSize: 13.5, lineHeight: 19, marginTop: -8 },
-  section: { gap: 6 },
-  sectionTitle: { color: colors.goldLight, fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  body: { color: colors.gray, fontSize: 13.5, lineHeight: 20 },
-});

@@ -27,14 +27,7 @@ export class LandingComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    let th = 'light';
-    try { th = localStorage.getItem('theme') || 'light'; } catch {}
-    document.documentElement.setAttribute('data-theme', th);
-    document.getElementById('theme-btn')?.addEventListener('click', () => {
-      const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', n);
-      try { localStorage.setItem('theme', n); } catch {}
-    });
+    document.documentElement.setAttribute('data-theme', 'dark');
     
     const nav = document.getElementById('nav');
       window.addEventListener('scroll', () => {

@@ -1,10 +1,5 @@
 const Sentry = require("@sentry/node");
-const cors = require('cors');
- 
-app.use(cors({
-  origin: ['https://www.eosgym.tech', 'https://eosgym.tech'],
-  credentials: true
-}));
+
 const sentryEnabled = !!(process.env.SENTRY_DSN && process.env.NODE_ENV !== "test");
 if (sentryEnabled) {
   Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV || "development", tracesSampleRate: 1.0 });

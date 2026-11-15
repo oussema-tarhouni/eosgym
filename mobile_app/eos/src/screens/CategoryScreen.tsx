@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors, radius } from '../theme/colors';
+import { colors } from '../theme/dark';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
 interface Category { id: string; name: string; desc: string; }

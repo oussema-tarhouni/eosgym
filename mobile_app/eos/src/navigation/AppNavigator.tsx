@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
+import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
@@ -14,6 +15,7 @@ import PlanScreen from '../screens/PlanScreen';
 import PendingScreen from '../screens/PendingScreen';
 
 export type RootStackParamList = {
+  Welcome: undefined;
   Login: undefined;
   Signup: undefined;
   ForgotPassword: undefined;
@@ -30,6 +32,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
-import { colors } from '../theme/colors';
+import { colors } from '../theme/dark';
 
 const GOALS = ['cut', 'maintain', 'bulk'] as const;
 const CAL_MULT: Record<string, number> = { cut: 0.8, maintain: 1, bulk: 1.15 };
@@ -114,10 +114,10 @@ const s = StyleSheet.create({
   pillTextActive: { color: colors.black },
   input: { backgroundColor: colors.bg, borderWidth: 1, borderColor: colors.line, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, color: colors.white },
   activityRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.bg, borderWidth: 1, borderColor: colors.line },
-  activityRowActive: { borderColor: colors.gold },
+  activityRowActive: { borderColor: colors.green },
   activityText: { color: colors.gray, fontSize: 12.5 },
-  activityTextActive: { color: colors.goldLight, fontWeight: '700' },
-  saveBtn: { backgroundColor: colors.gold, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
+  activityTextActive: { color: colors.greenLight, fontWeight: '700' },
+  saveBtn: { backgroundColor: colors.greenLight, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
   saveBtnText: { color: colors.black, fontWeight: '700', fontSize: 13.5 },
   empty: { color: colors.gray, fontSize: 13, lineHeight: 19 },
   kcalHero: { color: colors.goldLight, fontSize: 26, fontWeight: '700' },

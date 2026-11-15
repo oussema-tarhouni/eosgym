@@ -1,125 +1,94 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Image, Animated, Easing } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { Text } from 'react-native';
+import Animated, { FadeInRight, FadeOutLeft } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { colors } from '../theme/colors';
-import BackButton from '../components/backbtnforspecific';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { colors } from '../theme/dark';
+import {
+  AuthShell, AuthHeader, Field, ErrorBanner, PrimaryButton, CodeInput, linkStyle,
+} from '../components/AuthUI';
 
-const AnimatedInput = Animated.createAnimatedComponent(TextInput);
+type Nav = NativeStackNavigationProp<RootStackParamList, 'ForgotPassword'>;
+
+// ⚠️ UI only: connect these two to your real reset endpoints.
+// Until then they throw, so the screen shows an error instead of pretending it worked.
+const sendCode = async (email: string) => {
+  // await api.post('/auth/forgot-password', { email });
+  throw new Error('Connect your reset API in sendCode()');
+};
+const verifyCode = async (email: string, code: string) => {
+  // await api.post('/auth/verify-code', { email, code });
+  // then navigate to your reset-password screen
+  throw new Error('Connect your reset API in verifyCode()');
+};
+
+const errMsg = (e: any) => e?.response?.data?.error || e?.message || 'Something went wrong';
 
 export default function ForgotPasswordScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<Nav>();
+  const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [left, setLeft] = useState(0);
 
-  const fade = useRef(new Animated.Value(0)).current;
-  const slide = useRef(new Animated.Value(16)).current;
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fade, { toValue: 1, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(slide, { toValue: 0, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
+    if (left <= 0) return;
+    const t = setTimeout(() => setLeft(left - 1), 1000);
+    return () => clearTimeout(t);
+  }, [left]);
 
-  const anim = useRef(new Animated.Value(0)).current;
-  const borderColor = anim.interpolate({ inputRange: [0, 1], outputRange: [colors.line, colors.gold] });
-
-  const submit = async () => {
-    if (!email) return;
+  const run = async (fn: () => Promise<void>) => {
     setError('');
     setLoading(true);
-    try {
-      // TODO: wire to authApi.forgotPassword(email) once available
-      await new Promise((r) => setTimeout(r, 600));
-      setSent(true);
-    } catch (err: any) {
-      setError(err?.response?.data?.error || 'Une erreur est survenue');
-    } finally {
-      setLoading(false);
-    }
+    try { await fn(); } catch (e) { setError(errMsg(e)); } finally { setLoading(false); }
   };
 
+  const send = () => email && run(async () => {
+    await sendCode(email);
+    setCode('');
+    setLeft(30);
+    setStep('code');
+  });
+  const verify = () => code.length === 4 && run(() => verifyCode(email, code));
+  const resend = () => left === 0 && run(async () => { await sendCode(email); setLeft(30); });
+
+  const onBack = () => (step === 'code' ? (setError(''), setStep('email')) : navigation.goBack());
+
   return (
-    <ScrollView contentContainerStyle={s.screen} bounces={false}>
-      <View style={s.card}>
-        <View style={s.ring} />
-        <View style={s.ring2} />
-
-        <View style={s.back}>
-          <BackButton onPress={() => navigation.goBack()} />
-        </View>
-
-        <Animated.View style={{ opacity: fade, transform: [{ translateY: slide }], gap: 16 }}>
-          <Image source={require('../../assets/logo.png')} style={s.logo} resizeMode="contain" />
-
-          {sent ? (
-            <>
-              <View style={s.iconCircle}><Feather name="mail" size={22} color={colors.goldLight} /></View>
-              <Text style={s.h1}>Check your email</Text>
-              <Text style={s.sub}>We sent a password reset link to {email}.</Text>
-              <TouchableOpacity style={s.submit} onPress={() => navigation.goBack()}>
-                <Text style={s.submitText}>Back to Log In</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={s.h1}>Reset your password</Text>
-              <Text style={s.sub}>Enter the email linked to your account and we'll send you a reset link.</Text>
-
-              {!!error && <Text style={s.error}>{error}</Text>}
-
-              <View style={{ gap: 8 }}>
-                <Text style={s.label}>Email</Text>
-                <View style={s.inputWrap}>
-                  <View style={s.leftIcon}><Feather name="mail" size={17} color={colors.grayDim} /></View>
-                  <AnimatedInput
-                    style={[s.input, { paddingLeft: 44, borderColor }]}
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholder="you@example.com"
-                    placeholderTextColor={colors.grayDim}
-                    onFocus={() => Animated.timing(anim, { toValue: 1, duration: 160, useNativeDriver: false }).start()}
-                    onBlur={() => Animated.timing(anim, { toValue: 0, duration: 160, useNativeDriver: false }).start()}
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity style={[s.submit, loading && { opacity: 0.6 }]} onPress={submit} disabled={loading}>
-                {loading ? <ActivityIndicator color={colors.black} /> : <Text style={s.submitText}>Send reset link</Text>}
-              </TouchableOpacity>
-
-              <Text style={s.footer}>
-                Remembered it? <Text style={s.link} onPress={() => navigation.goBack()}>Log in</Text>
-              </Text>
-            </>
-          )}
+    <AuthShell onBack={onBack}>
+      {step === 'email' ? (
+        <Animated.View key="email" entering={FadeInRight.duration(350)} exiting={FadeOutLeft.duration(200)} style={{ gap: 22 }}>
+          <AuthHeader
+            icon="lock"
+            title="Forgot Password?"
+            sub="Don't worry! Enter the address associated with your account and we'll send you reset instructions."
+          />
+          {!!error && <ErrorBanner text={error} />}
+          <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+          <PrimaryButton label="Send" onPress={send} loading={loading} />
         </Animated.View>
-      </View>
-    </ScrollView>
+      ) : (
+        <Animated.View key="code" entering={FadeInRight.duration(350)} exiting={FadeOutLeft.duration(200)} style={{ gap: 22 }}>
+          <AuthHeader
+            icon="mail"
+            tone="green"
+            title="Check your email"
+            sub={<>We sent a 4 digit code to{'\n'}<Text style={{ fontWeight: '700', color: colors.white }}>{email}</Text></>}
+          />
+          {!!error && <ErrorBanner text={error} />}
+          <CodeInput value={code} onChange={setCode} />
+          <PrimaryButton label="Verify" onPress={verify} loading={loading} />
+          <Text style={{ textAlign: 'center', color: colors.gray, fontSize: 13.5 }}>
+            Didn't receive the email?{' '}
+            <Text style={[linkStyle, left > 0 && { color: colors.grayDim }]} onPress={resend}>
+              {left > 0 ? `Resend (${left})` : 'Resend'}
+            </Text>
+          </Text>
+        </Animated.View>
+      )}
+    </AuthShell>
   );
 }
-
-const s = StyleSheet.create({
-  screen: { flexGrow: 1, backgroundColor: colors.charcoal },
-  card: { flex: 1, width: '100%', backgroundColor: colors.charcoal, padding: 24, paddingTop: 60, gap: 16, overflow: 'hidden', justifyContent: 'center' },
-  ring: { position: 'absolute', top: -60, right: -70, width: 220, height: 220, borderRadius: 110, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
-  ring2: { position: 'absolute', bottom: -90, left: -80, width: 260, height: 260, borderRadius: 130, borderWidth: 1, borderColor: 'rgba(212,175,55,0.18)' },
-  back: { position: 'absolute', top: 60, left: 24, zIndex: 2 },
-  logo: { width: 68, height: 20, alignSelf: 'center', marginTop: -4 },
-  iconCircle: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', borderWidth: 1, borderColor: colors.line },
-  h1: { fontSize: 22, color: colors.white, fontWeight: '700', textAlign: 'center', marginTop: 4 },
-  sub: { fontSize: 13.5, color: colors.gray, lineHeight: 19, textAlign: 'center' },
-  label: { fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase', color: colors.gray },
-  inputWrap: { justifyContent: 'center' },
-  input: { backgroundColor: colors.bg, borderWidth: 1, borderColor: colors.line, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 18, color: colors.white, fontSize: 14.5 },
-  leftIcon: { position: 'absolute', left: 16, zIndex: 1 },
-  link: { color: colors.goldLight, fontWeight: '700' },
-  submit: { backgroundColor: colors.gold, borderRadius: 999, padding: 15, alignItems: 'center', marginTop: 4 },
-  submitText: { color: colors.black, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
-  footer: { textAlign: 'center', color: colors.gray, fontSize: 13 },
-  error: { color: '#e5484d', fontSize: 14, textAlign: 'center' },
-});

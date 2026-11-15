@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../theme/colors';
+import { colors, cardShadow } from '../theme/light';
 
 const MUSC = [
   { title: 'Membership', rows: [['1 Month', '90 DT'], ['2 Months', '160 DT'], ['3 Months', '180 DT', '225 DT'], ['6 Months', '340 DT', '420 DT'], ['12 Months', '700 DT']] },
@@ -57,10 +57,10 @@ const s = StyleSheet.create({
   tab: { flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, alignItems: 'center' },
   tabActive: { backgroundColor: colors.gold, borderColor: colors.gold },
   tabText: { color: colors.gray, fontWeight: '700', fontSize: 13 },
-  tabTextActive: { color: colors.black },
-  card: { backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, gap: 6 },
+  tabTextActive: { color: '#fff' },
+  card: { backgroundColor: '#ffffff', ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, gap: 6 },
   cardTitle: { color: colors.goldLight, fontSize: 14, fontWeight: '700', marginBottom: 6 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderTopWidth: 1, borderTopColor: 'rgba(22,22,19,0.07)' },
   rowLabel: { color: colors.gray, fontSize: 12.5 },
   rowPrice: { color: colors.white, fontWeight: '700', fontSize: 12.5 },
   strike: { color: colors.grayDim, fontSize: 11, textDecorationLine: 'line-through' },
