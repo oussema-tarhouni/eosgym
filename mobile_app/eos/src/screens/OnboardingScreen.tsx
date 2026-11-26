@@ -1,172 +1,276 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View, Text, Pressable, Image, StyleSheet, KeyboardAvoidingView, Platform, ScrollView,
+  NativeSyntheticEvent, NativeScrollEvent,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
-import Animated, {
-  useSharedValue, useAnimatedScrollHandler, useAnimatedStyle,
-  interpolate, Extrapolate, withTiming,
-} from 'react-native-reanimated';
-import { colors } from '../theme/colors';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { colors, GREEN_START } from '../theme/dark';
+import { Field } from '../components/AuthUI';
 
-const { width, height } = Dimensions.get('window');
+type Nav = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
+type Unit = 'metric' | 'imperial';
 
-const GRADIENT_URI =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAEACAYAAACZCaebAAAAU0lEQVR4nN2MwRHAMAjDFK4v9h84nwyQBGpoefmw5OHuABjr7sIDjARYUAXhkk8JHKwEuhJO1wWDfw7WbPBOP7J24CbMe/pRVbIThNP1D32UugFM0KYEw9WWSpoAAAAASUVORK5CYII=';
+// Read this in SignupScreen and send it to your API with the signup data.
+export const onboardingAnswers: {
+  gender?: string; goals?: string[]; experience?: string; daysPerWeek?: number;
+  age?: number; heightCm?: number; weightKg?: number;
+} = {};
 
-const SLIDES = [
-  {
-    title1: 'Train Smarter With', title2: 'Real Coaching',
-    desc: 'Strength training and reformer pilates, guided by coaches who track your form and your progress.',
-    img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title1: 'Track Every', title2: 'Rep & Result',
-    desc: 'Log your workouts, book classes, and watch your progress add up week after week.',
-    img: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title1: 'Stay Motivated And', title2: 'Reach Your Goals',
-    desc: 'A community and coaching staff that actually knows your name and your targets.',
-    img: 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=800&q=80',
-  },
+const GOALS: { label: string; icon: any }[] = [
+  { label: 'Build Muscle', icon: 'arm-flex' },
+  { label: 'Gain Strength', icon: 'dumbbell' },
+  { label: 'Lose Weight', icon: 'scale-bathroom' },
+  { label: 'Stay in Shape', icon: 'heart-pulse' },
+  { label: 'Conditioning', icon: 'run-fast' },
 ];
+const EXPERIENCE = ['Just getting started', 'A few months', 'About a year', 'Several years', 'I train competitively'];
+const DAYS = [2, 3, 4, 5, 6];
+const TOTAL = 6;
+const WEIGHT_STEP = 5;
+const KG_PER_LB = 1 / 2.20462;
+const RANGE: Record<Unit, [number, number]> = { metric: [30, 300], imperial: [66, 660] };
+const DECIMALS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const ITEM_H = 60;
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+// Adjust paths if your images are elsewhere
+const GENDER_IMG: Record<string, any> = {
+  Male: require('../../assets/male.png'),
+  Female: require('../../assets/female.png'),
+};
+
+function Option({ label, selected, onPress, right, icon }: { label: string; selected: boolean; onPress: () => void; right?: string; icon?: any }) {
+  return (
+    <Pressable onPress={onPress} style={[s.option, selected && s.optionOn]}>
+      {!!icon && (
+        <View style={[s.iconWrap, selected && s.iconWrapOn]}>
+          <MaterialCommunityIcons name={icon} size={22} color={selected ? colors.greenLight : colors.goldLight} />
+        </View>
+      )}
+      <Text style={[s.optionText, selected && { color: colors.greenLight }]}>{label}</Text>
+      {!!right && <Text style={s.optionTag}>{right}</Text>}
+      {selected && <Feather name="check-circle" size={18} color={colors.green} />}
+    </Pressable>
+  );
+}
+
+// Vertical snap wheel showing 3 rows; the middle row is the selected one.
+function Wheel({ data, index, onChange, width = 116 }: { data: number[]; index: number; onChange: (i: number) => void; width?: number }) {
+  const ref = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => ref.current?.scrollTo({ y: index * ITEM_H, animated: false }), 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const settle = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const i = Math.round(e.nativeEvent.contentOffset.y / ITEM_H);
+    onChange(Math.max(0, Math.min(data.length - 1, i)));
+  };
+
+  return (
+    <View style={{ width, height: ITEM_H * 3 }}>
+      <View pointerEvents="none" style={[s.wheelLine, { top: ITEM_H }]} />
+      <View pointerEvents="none" style={[s.wheelLine, { top: ITEM_H * 2 }]} />
+      <ScrollView
+        ref={ref}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={ITEM_H}
+        decelerationRate="fast"
+        onMomentumScrollEnd={settle}
+        onScrollEndDrag={settle}
+        contentContainerStyle={{ paddingVertical: ITEM_H }}
+      >
+        {data.map((d, i) => (
+          <View key={d} style={s.wheelItem}>
+            <Text style={[s.wheelText, i === index && s.wheelTextOn]}>{d}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
 
 export default function OnboardingScreen() {
-  const navigation = useNavigation<any>();
-  const [index, setIndex] = useState(0);
-  const listRef = React.useRef<any>(null);
-  const scrollX = useSharedValue(0);
-  const isLast = index === SLIDES.length - 1;
+  const navigation = useNavigation<Nav>();
+  const [step, setStep] = useState(0);
+  const [gender, setGender] = useState('');
+  const [goals, setGoals] = useState<string[]>([]);
+  const [exp, setExp] = useState('');
+  const [days, setDays] = useState(0);
+  const [age, setAge] = useState('');
+  const [height, setHeight] = useState('');
+  // weight (shown in the chosen unit)
+  const [unit, setUnit] = useState<Unit>('metric');
+  const [whole, setWhole] = useState(75);
+  const [dec, setDec] = useState(0);
 
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: (e) => { scrollX.value = e.contentOffset.x; },
-  });
+  const a = Number(age), h = Number(height);
+  const statsOk = a >= 14 && a <= 100 && h >= 100 && h <= 250;
+  const valid = [!!gender, goals.length > 0, !!exp, days > 0, statsOk, true][step];
 
-  const onMomentumEnd = (e: any) => {
-    setIndex(Math.round(e.nativeEvent.contentOffset.x / width));
+  const [lo, hi] = RANGE[unit];
+  const wholeData = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+  const total = whole + dec / 10;
+  const weightKg = Math.round((unit === 'metric' ? total : total * KG_PER_LB) * 10) / 10;
+
+  const switchUnit = (u: Unit) => {
+    if (u === unit) return;
+    const converted = Math.round((u === 'imperial' ? total / KG_PER_LB : total * KG_PER_LB) * 10) / 10;
+    const [l, hh] = RANGE[u];
+    const c = Math.min(hh, Math.max(l, converted));
+    setWhole(Math.floor(c));
+    setDec(Math.round((c - Math.floor(c)) * 10) % 10);
+    setUnit(u);
   };
+
+  const progress = (step + 1) / TOTAL;
+  const goldPct = Math.min(progress, GREEN_START) * 100;
+  const greenPct = Math.max(0, progress - GREEN_START) * 100;
 
   const next = () => {
-    if (isLast) return navigation.navigate('Login');
-    listRef.current?.scrollToIndex({ index: index + 1 });
+    if (step < TOTAL - 1) return setStep(step + 1);
+    Object.assign(onboardingAnswers, { gender, goals, experience: exp, daysPerWeek: days, age: a, heightCm: h, weightKg });
+    navigation.navigate('Signup');
   };
+  const back = () => (step === 0 ? navigation.goBack() : setStep(step - 1));
+  const toggleGoal = (g: string) => setGoals((l) => (l.includes(g) ? l.filter((x) => x !== g) : [...l, g]));
+
+  const titles = ["What's your gender?", 'What are your goals?', "What's your experience with training?", 'How many days a week do you want to work out?', 'Tell us about your age and height', 'How much do you weigh?'];
+  const subs = ['This helps us personalize your experience', "Choose as many as you'd like.", '', 'You can always change it later', 'Used to tailor your plan and calories', ''];
 
   return (
-    <View style={s.root}>
-      <AnimatedFlatList
-        ref={listRef}
-        data={SLIDES}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(_: any, i: number) => String(i)}
-        onScroll={onScroll}
-        onMomentumScrollEnd={onMomentumEnd}
-        scrollEventThrottle={16}
-        renderItem={({ item, index: i }: any) => <Slide item={item} index={i} scrollX={scrollX} />}
-      />
-
-      <View style={s.bottom}>
-        <View style={s.dots}>
-          {SLIDES.map((_, i) => <Dot key={i} i={i} scrollX={scrollX} />)}
+    <KeyboardAvoidingView style={s.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={s.top}>
+        <Pressable onPress={back} hitSlop={12}><Feather name="arrow-left" size={24} color={colors.gray} /></Pressable>
+        <View style={s.track}>
+          {/* Gold until GREEN_START, then green for the rest */}
+          <View style={[s.fill, { width: `${goldPct}%`, backgroundColor: colors.gold }]} />
+          <View style={[s.fill, { width: `${greenPct}%`, backgroundColor: colors.green }]} />
         </View>
-
-        {!isLast ? (
-          <View style={s.row}>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} hitSlop={10}>
-              <Text style={s.skipText}>Skip</Text>
-            </TouchableOpacity>
-            <ArrowButton onPress={next} />
-          </View>
-        ) : (
-          <View style={{ alignItems: 'center' }}>
-            <TouchableOpacity style={s.cta} onPress={() => navigation.navigate('Signup')}>
-              <Text style={s.ctaText}>Get Started</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={s.loginLink}>Already have an account? Log In</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
-    </View>
-  );
-}
 
-// One slide's text fades + rises in as it becomes centered, and the image
-// gets a subtle parallax drift — driven entirely by scrollX (UI thread).
-function Slide({ item, index, scrollX }: { item: (typeof SLIDES)[number]; index: number; scrollX: Animated.SharedValue<number> }) {
-  const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+      {step === WEIGHT_STEP ? (
+        <View style={s.weightBody}>
+          <Text style={s.title}>{titles[step]}</Text>
 
-  const textStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollX.value, inputRange, [0, 1, 0], Extrapolate.CLAMP),
-    transform: [{ translateY: interpolate(scrollX.value, inputRange, [18, 0, 18], Extrapolate.CLAMP) }],
-  }));
-  const imgStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: interpolate(scrollX.value, inputRange, [-width * 0.12, 0, width * 0.12], Extrapolate.CLAMP) }],
-  }));
+          <View style={s.segment}>
+            {(['metric', 'imperial'] as Unit[]).map((u) => (
+              <Pressable key={u} onPress={() => switchUnit(u)} style={[s.segItem, unit === u && s.segItemOn]}>
+                <Text style={[s.segText, unit === u && { color: colors.greenLight }]}>{u === 'metric' ? 'Metric system' : 'Imperial system'}</Text>
+              </Pressable>
+            ))}
+          </View>
 
-  return (
-    <View style={{ width, height }}>
-      <Animated.Image source={{ uri: item.img }} style={[s.image, imgStyle]} />
-      <Animated.Image source={{ uri: GRADIENT_URI }} style={s.gradient} resizeMode="stretch" pointerEvents="none" />
-      <View style={s.greenRing} pointerEvents="none" />
-      <Animated.View style={[s.textBlock, textStyle]}>
-        <Text style={s.title}>{item.title1} <Text style={s.titleBold}>{item.title2}</Text></Text>
-        <Text style={s.desc}>{item.desc}</Text>
-      </Animated.View>
-    </View>
-  );
-}
+          <View style={s.display}>
+            <Text style={s.displayNum}>{whole} , {dec}</Text>
+            <Text style={s.displayUnit}>{unit === 'metric' ? 'kg' : 'lb'}</Text>
+          </View>
 
-function Dot({ i, scrollX }: { i: number; scrollX: Animated.SharedValue<number> }) {
-  const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
-  const style = useAnimatedStyle(() => ({
-    width: interpolate(scrollX.value, inputRange, [20, 28, 20], Extrapolate.CLAMP),
-    opacity: interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], Extrapolate.CLAMP),
-  }));
-  return <Animated.View style={[s.dot, style]} />;
-}
+          <View style={s.wheels}>
+            <Wheel key={`w-${unit}`} data={wholeData} index={whole - lo} onChange={(i) => setWhole(lo + i)} />
+            <Text style={s.comma}>,</Text>
+            <Wheel key={`d-${unit}`} data={DECIMALS} index={dec} onChange={setDec} />
+            <Text style={s.wheelUnit}>{unit === 'metric' ? 'kg' : 'lb'}</Text>
+          </View>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
+          <Text style={s.title}>{titles[step]}</Text>
+          {!!subs[step] && <Text style={s.sub}>{subs[step]}</Text>}
 
-function ArrowButton({ onPress }: { onPress: () => void }) {
-  const scale = useSharedValue(1);
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={onPress}
-      onPressIn={() => (scale.value = withTiming(0.9, { duration: 100 }))}
-      onPressOut={() => (scale.value = withTiming(1, { duration: 150 }))}
-    >
-      <Animated.View style={[s.arrowBtn, style]}>
-        <Feather name="arrow-right" size={20} color={colors.black} />
-      </Animated.View>
-    </TouchableOpacity>
+          {step === 0 && (
+            <View style={s.genderRow}>
+              {['Male', 'Female'].map((g) => (
+                <Pressable key={g} onPress={() => setGender(g)} style={[s.genderItem, { opacity: !gender || gender === g ? 1 : 0.4 }]}>
+                  <Image source={GENDER_IMG[g]} style={s.genderImg} resizeMode="contain" />
+                  <Text style={[s.genderLabel, gender === g && { color: colors.greenLight }]}>{g}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          {step === 1 && GOALS.map((g) => <Option key={g.label} icon={g.icon} label={g.label} selected={goals.includes(g.label)} onPress={() => toggleGoal(g.label)} />)}
+          {step === 2 && EXPERIENCE.map((e) => <Option key={e} label={e} selected={exp === e} onPress={() => setExp(e)} />)}
+          {step === 3 && DAYS.map((d) => <Option key={d} label={`${d} days a week`} selected={days === d} onPress={() => setDays(d)} right={d >= 3 && d <= 5 ? 'Recommended' : undefined} />)}
+          {step === 4 && (
+            <View style={{ gap: 12 }}>
+              {[
+                { l: 'Age', v: age, set: setAge, u: 'years' },
+                { l: 'Height', v: height, set: setHeight, u: 'cm' },
+              ].map((f) => (
+                <Field
+                  key={f.l}
+                  label={f.l}
+                  value={f.v}
+                  onChangeText={(x: string) => f.set(x.replace(/[^0-9]/g, '').slice(0, 3))}
+                  keyboardType="number-pad"
+                  right={<Text style={s.optionRight}>{f.u}</Text>}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      )}
+
+      <View style={s.footer}>
+        <Pressable onPress={next} disabled={!valid} style={[s.btn, !valid && { opacity: 0.4 }]}>
+          <Text style={s.btnText}>Continue</Text>
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  image: { width: '100%', height: '68%' },
-  gradient: { position: 'absolute', top: 0, left: 0, right: 0, height: '68%' },
-  greenRing: {
-    position: 'absolute', bottom: -60, alignSelf: 'center',
-    width: 260, height: 260, borderRadius: 130,
-    borderWidth: 24, borderColor: 'rgba(143,194,95,0.18)',
+  root: { flex: 1, backgroundColor: '#000' },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 20, paddingTop: 56 },
+  track: { flex: 1, flexDirection: 'row', height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.12)', overflow: 'hidden' },
+  fill: { height: '100%' },
+  body: { padding: 20, paddingTop: 36, gap: 12 },
+  title: { color: '#fff', fontSize: 26, fontWeight: '800', textAlign: 'center' },
+  sub: { color: colors.gray, fontSize: 15, textAlign: 'center', marginBottom: 16 },
+  option: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 58, borderRadius: 14, paddingHorizontal: 18,
+    backgroundColor: colors.charcoal2, borderWidth: 1, borderColor: 'transparent',
   },
-  textBlock: { position: 'absolute', bottom: 190, left: 28, right: 28 },
-  title: { color: colors.white, fontSize: 28, fontWeight: '400', lineHeight: 34, textAlign: 'center' },
-  titleBold: { fontWeight: '700' },
-  desc: { color: colors.gray, fontSize: 14, lineHeight: 20, marginTop: 12, textAlign: 'center' },
-  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 28, paddingBottom: 44 },
-  dots: { flexDirection: 'row', gap: 6, alignSelf: 'center', marginBottom: 24 },
-  dot: { height: 3, borderRadius: 2, backgroundColor: colors.gold },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  skipText: { color: colors.white, fontSize: 14, fontWeight: '600', opacity: 0.85 },
-  arrowBtn: { width: 54, height: 54, borderRadius: 27, backgroundColor: colors.gold, alignItems: 'center', justifyContent: 'center' },
-  cta: { backgroundColor: colors.gold, borderRadius: 27, paddingVertical: 15, paddingHorizontal: 90 },
-  ctaText: { color: colors.black, fontWeight: '700', fontSize: 15, textTransform: 'uppercase', letterSpacing: 0.6 },
-  loginLink: { color: colors.gray, fontSize: 13, marginTop: 16 },
+  genderRow: { flexDirection: 'row', gap: 0, marginTop: 8, marginHorizontal: -20 },
+  genderItem: { flex: 1, alignItems: 'center', gap: 10 },
+  genderImg: { width: '100%', height: 520 },
+  genderLabel: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  iconWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(245,244,240,0.07)', alignItems: 'center', justifyContent: 'center' },
+  // Assumes colors.green is a 6-digit hex; "1F" adds ~12% alpha for the tint
+  iconWrapOn: { backgroundColor: `${colors.green}33` },
+  optionOn: { borderColor: colors.green, backgroundColor: `${colors.green}1F` },
+  optionText: { flex: 1, color: '#fff', fontSize: 16 },
+  optionRight: { color: colors.gray, fontSize: 13 },
+  optionTag: { color: colors.gold, fontSize: 13, fontWeight: '600' },
+  footer: { padding: 20, paddingBottom: 40, alignItems: 'center' },
+  btn: { alignSelf: 'stretch', height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.gold },
+  btnText: { color: '#000', fontSize: 16, fontWeight: '700' },
+
+  // weight step
+  weightBody: { flex: 1, padding: 20, paddingTop: 36 },
+  segment: {
+    flexDirection: 'row', marginTop: 48, padding: 3, borderRadius: 30, backgroundColor: colors.charcoal2,
+    borderWidth: 1, borderColor: colors.line,
+  },
+  segItem: { flex: 1, height: 48, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
+  segItemOn: { backgroundColor: '#000', borderColor: colors.green },
+  segText: { color: colors.gray, fontSize: 15, fontWeight: '600' },
+  display: {
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 8, marginTop: 48,
+    height: 90, borderRadius: 14, backgroundColor: colors.charcoal2,
+  },
+  displayNum: { color: '#fff', fontSize: 44, fontWeight: '600', lineHeight: 90 },
+  displayUnit: { color: colors.goldLight, fontSize: 22, fontWeight: '700' },
+  wheels: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  comma: { color: colors.gray, fontSize: 28, marginHorizontal: 4 },
+  wheelUnit: { color: colors.goldLight, fontSize: 22, fontWeight: '700', marginLeft: 12 },
+  wheelLine: { position: 'absolute', left: 0, right: 0, height: 2, backgroundColor: colors.gold, opacity: 0.7, zIndex: 1 },
+  wheelItem: { height: ITEM_H, alignItems: 'center', justifyContent: 'center' },
+  wheelText: { color: colors.grayDim, fontSize: 32, fontWeight: '600' },
+  wheelTextOn: { color: '#fff' },
 });

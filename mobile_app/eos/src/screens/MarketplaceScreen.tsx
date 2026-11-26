@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Pressable, ScrollView, Alert, Image, useWindowDimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { colors, cardShadow } from '../theme/dark';
+import { addOrderNotif } from './orderNotifs';
 
 type Product = { id: number; name: string; brand: string; price: number; rating: number; reviews: number; category: string; icon: string; stock: boolean; tag?: string; images?: string[] }; // images: add as many photo URLs as you want
 
@@ -37,9 +38,14 @@ const Pic = ({ uri, icon, size, style }: { uri?: string; icon: string; size: num
 const SHIPPING = 7;
 const PROMOS: Record<string, number> = { EOS10: 0.1 };
 
-type Props = { onBack?: () => void; onCartChange?: (count: number, total: number) => void; bagSignal?: number };
+type Props = {
+  onBack?: () => void;
+  onCartChange?: (count: number, total: number) => void;
+  bagSignal?: number;
+  onOrderPlaced?: (order: { items: { name: string; qty: number }[]; count: number; total: number }) => void;
+};
 
-export default function MarketplaceScreen({ onCartChange, bagSignal = 0 }: Props) {
+export default function MarketplaceScreen({ onCartChange, onOrderPlaced, bagSignal = 0 }: Props) {
   const [q, setQ] = useState('');
   const [focus, setFocus] = useState(false);
   const [cat, setCat] = useState('All');
@@ -56,6 +62,7 @@ export default function MarketplaceScreen({ onCartChange, bagSignal = 0 }: Props
   const [heroH, setHeroH] = useState(300);
   const [imgI, setImgI] = useState(0);
   const [bag, setBag] = useState(false);
+  const [placed, setPlaced] = useState<{ count: number; total: number } | null>(null);
   const [promo, setPromo] = useState('');
   const [discount, setDiscount] = useState(0);
 
@@ -94,7 +101,13 @@ export default function MarketplaceScreen({ onCartChange, bagSignal = 0 }: Props
   };
   const checkout = () => Alert.alert('Confirm order', `${count} item(s) — ${total} TND`, [
     { text: 'Cancel', style: 'cancel' },
-    { text: 'Confirm', onPress: () => { setCart({}); setDiscount(0); setPromo(''); setBag(false); Alert.alert('Order placed', 'Thank you!'); } },
+    { text: 'Confirm', onPress: () => {
+      const items = bagItems.map((p) => ({ name: p.name, qty: cart[p.id] }));
+      addOrderNotif({ items, total });
+      onOrderPlaced?.({ items, count, total });
+      setPlaced({ count, total });
+      setCart({}); setDiscount(0); setPromo(''); setBag(false);
+    } },
   ]);
 
 
@@ -277,6 +290,20 @@ export default function MarketplaceScreen({ onCartChange, bagSignal = 0 }: Props
           </View>
         </View>
       </Modal>
+      <Modal visible={!!placed} transparent animationType="fade" onRequestClose={() => setPlaced(null)}>
+        <View style={s.successOverlay}>
+          <View style={s.successBox}>
+            <View style={s.successIcon}><Feather name="check" size={28} color={colors.black} /></View>
+            <Text style={s.successTitle}>Order placed</Text>
+            <Text style={s.successText}>
+              Your order ({placed?.count} item{placed?.count === 1 ? '' : 's'}, {placed?.total} TND) has been received. Our service team will call you soon to confirm it.
+            </Text>
+            <TouchableOpacity style={[s.btn, { alignSelf: 'stretch', flex: 0 }]} onPress={() => setPlaced(null)}>
+              <Text style={s.btnText}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -358,4 +385,10 @@ const s = StyleSheet.create({
   btn: { flex: 1, height: 50, borderRadius: 14, backgroundColor: colors.goldLight, alignItems: 'center', justifyContent: 'center' },
   btnGhost: { backgroundColor: colors.black },
   btnText: { color: colors.black, fontWeight: '800', fontSize: 14 },
+
+  successOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  successBox: { width: '100%', backgroundColor: colors.charcoal2, borderRadius: 24, padding: 24, alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.lineSoft },
+  successIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.greenLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  successTitle: { color: colors.white, fontSize: 18, fontWeight: '800' },
+  successText: { color: colors.gray, fontSize: 14, lineHeight: 21, textAlign: 'center', marginBottom: 8 },
 });

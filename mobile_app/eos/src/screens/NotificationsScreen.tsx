@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, Linking, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors, cardShadow } from '../theme/dark';
+import { colors } from '../theme/dark';
+import { useLocalNotifs } from './orderNotifs';
 
 export type Notif = {
   id: number; title: string; description: string | null;
@@ -19,7 +20,9 @@ function ago(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function NotificationsScreen({ notifs, onDelete }: { notifs: Notif[]; onDelete: (id: number) => void }) {
+export default function NotificationsScreen({ notifs: remote }: { notifs: Notif[]; onDelete?: (id: number) => void }) {
+  const local = useLocalNotifs();
+  const notifs = [...local, ...remote];
   if (!notifs.length) {
     return (
       <View style={s.empty}>
@@ -31,27 +34,22 @@ export default function NotificationsScreen({ notifs, onDelete }: { notifs: Noti
   }
 
   return (
-    <View style={{ gap: 12 }}>
-      {notifs.map((n) => (
-        <View key={n.id} style={s.card}>
-          <View style={s.head}>
-            <View style={s.iconWrap}><Feather name="bell" size={16} color={colors.goldLight} /></View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.title}>{n.title}</Text>
-              <Text style={s.time}>{ago(n.created_at)}</Text>
-            </View>
-            <TouchableOpacity onPress={() => onDelete(n.id)} hitSlop={10} style={s.del}>
-              <Feather name="trash-2" size={17} color={colors.gray} />
-            </TouchableOpacity>
+    <View>
+      {notifs.map((n, i) => (
+        <View key={n.id} style={[s.row, i < notifs.length - 1 && s.sep]}>
+          <View style={s.line} />
+          <View style={s.body}>
+            <Text style={s.title}>{n.title}</Text>
+            {!!n.description && <Text style={s.desc}>{n.description}</Text>}
+            {!!n.image_url && <Image source={{ uri: n.image_url }} style={s.image} resizeMode="cover" />}
+            {!!n.link && (
+              <TouchableOpacity style={s.linkRow} onPress={() => Linking.openURL(n.link!)}>
+                <Text style={s.link}>Open</Text>
+                <Feather name="arrow-up-right" size={14} color={colors.goldLight} />
+              </TouchableOpacity>
+            )}
           </View>
-          {!!n.description && <Text style={s.desc}>{n.description}</Text>}
-          {!!n.image_url && <Image source={{ uri: n.image_url }} style={s.image} resizeMode="cover" />}
-          {!!n.link && (
-            <TouchableOpacity style={s.linkRow} onPress={() => Linking.openURL(n.link!)}>
-              <Text style={s.link}>Open</Text>
-              <Feather name="arrow-up-right" size={14} color={colors.goldLight} />
-            </TouchableOpacity>
-          )}
+          <Text style={s.time}>{ago(n.created_at)}</Text>
         </View>
       ))}
     </View>
@@ -59,12 +57,12 @@ export default function NotificationsScreen({ notifs, onDelete }: { notifs: Noti
 }
 
 const s = StyleSheet.create({
-  card: { backgroundColor: colors.charcoal2, ...cardShadow, borderWidth: 1, borderColor: colors.line, borderRadius: 16, padding: 16, gap: 10 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  iconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(201,162,39,0.15)', alignItems: 'center', justifyContent: 'center' },
-  del: { padding: 4 },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 16 },
+  sep: { borderBottomWidth: 1, borderBottomColor: colors.line },
+  time: { color: colors.gray, fontSize: 12, fontWeight: '600', paddingTop: 2, textAlign: 'right' },
+  line: { width: 3, height: 28, borderRadius: 2, backgroundColor: colors.goldLight, marginTop: 1 },
+  body: { flex: 1, gap: 8 },
   title: { color: colors.white, fontSize: 15, fontWeight: '700' },
-  time: { color: colors.gray, fontSize: 12, marginTop: 2 },
   desc: { color: colors.gray, fontSize: 14, lineHeight: 21 },
   image: { width: '100%', height: 160, borderRadius: 12 },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
