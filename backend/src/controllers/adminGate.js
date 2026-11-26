@@ -46,6 +46,8 @@ function check(req, res) {
 // Active admin sessions granted after a successful gate verify. 2 hour expiry.
 const adminSessions = new Map();
 
+function endSession(token) { adminSessions.delete(token); }
+
 function isValidSession(token) {
   const expiresAt = adminSessions.get(token);
   if (!expiresAt || Date.now() > expiresAt) {
@@ -57,7 +59,7 @@ function isValidSession(token) {
 
 // Consumes the code only on successful credential match, then grants a session token.
 function verify(req, res) {
-  const { code, username, dbUsername, dbPassword, password } = req.body || {};
+  const { code, username, password } = req.body || {};
 
   const expiresAt = pendingCodes.get(code);
   if (!expiresAt || Date.now() > expiresAt) {
@@ -67,8 +69,6 @@ function verify(req, res) {
 
   const credsOk =
     safeEqual(username, process.env.ADMIN_GATE_USERNAME) &&
-    safeEqual(dbUsername, process.env.ADMIN_GATE_DB_USERNAME) &&
-    safeEqual(dbPassword, process.env.ADMIN_GATE_DB_PASSWORD) &&
     safeEqual(password, process.env.ADMIN_GATE_PASSWORD);
 
   if (!credsOk) return res.status(401).json({ error: "Identifiants invalides" });
@@ -80,4 +80,11 @@ function verify(req, res) {
   res.json({ ok: true, adminToken });
 }
 
-module.exports = { generate, check, verify, isValidSession };
+function checkSession(req, res) {
+  const t = req.headers["x-admin-session"];
+  if (!t || !isValidSession(t)) return res.status(401).json({ error: "Session invalide" });
+  res.json({ ok: true });
+}
+function logout(req, res) { endSession(req.headers["x-admin-session"]); res.json({ ok: true }); }
+
+module.exports = { generate, check, verify, isValidSession, checkSession, logout };

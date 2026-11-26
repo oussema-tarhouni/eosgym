@@ -59,15 +59,22 @@ export class SignupComponent implements AfterViewInit {
       const phoneValid = /^[0-9]{8}$/.test(phone);
       phoneError?.classList.toggle('field__error--show', !phoneValid);
       phoneInput?.classList.toggle('field--invalid', !phoneValid);
+      const gender = document.getElementById('su-gender').value;
+      const age = Number(document.getElementById('su-age').value);
+      const num = (id: string) => { const v = document.getElementById(id).value; return v === '' ? null : Number(v); };
+      const fail = (m: string) => { phoneError.textContent = m; phoneError.classList.add('field__error--show'); };
       if (!name || !email || !password || password !== confirm || !phoneValid) return;
+      if (!gender || !(age >= 10 && age <= 100)) return fail('Please select your gender and enter a valid age');
 
       submitBtn?.classList.add('auth-form__submit--loading');
       submitBtn.disabled = true;
 
       try {
-        await this.auth.register(name, email, phone, password);
-        await this.auth.sendOtp();
-        this.router.navigate(['/verify-otp'], { queryParams: { email } });
+        await this.auth.register({
+          name, email, phone, password, gender, age,
+          height_cm: num('su-height'), weight_kg: num('su-weight'),
+        });
+        this.router.navigate(['/select-plan']);
       } catch (err: any) {
         const msg = err?.error?.error || 'Une erreur est survenue';
         phoneError.textContent = msg;

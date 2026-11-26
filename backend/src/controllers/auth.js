@@ -1,21 +1,17 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 const Token = require("../models/tokenModel");
-const Otp = require("../models/otpModel");
 const RefreshToken = require("../models/refreshTokenModel");
 const RevokedToken = require("../models/revokedTokenModel");
 const storage = require("../services/storage");
 const emailService = require("../services/email.service");
-const smsService = require("../services/sms.service");
 const Subscription = require("../models/subscriptionModel"); // CHANGED
 const { detectImageType } = require("../utils/imageType");
-const { generateOpaqueToken, generateOtpCode, hashToken } = require("../utils/token");
+const { generateOpaqueToken, hashToken } = require("../utils/token");
 const { generateAccessToken, verifyAccessToken } = require("../utils/jwt");
-const { isValidEmail, isValidPassword, isValidPhone, isValidOtpCode, PASSWORD_MIN_LENGTH } = require("../utils/validation");
-const { sendOtpEmail } = require("../services/otpEmailService");
+const { isValidEmail, isValidPassword, isValidPhone, parseProfile, PASSWORD_MIN_LENGTH } = require("../utils/validation");
 const RESET_TOKEN_TTL_MS = 15 * 60 * 1000;
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-const OTP_TTL_MS = 10 * 60 * 1000;
 
 const REFRESH_COOKIE = "refresh_token";
 const VALID_CATEGORIES = ["Strength", "Pilates"]; // CHANGED
@@ -54,8 +50,8 @@ async function issueRefreshToken(userId) {
 
 function toPublicUser(user) {
   if (!user) return user;
-  const { password_hash, email_verified_at, phone_verified_at, ...publicUser } = user;
-  return { ...publicUser, email_verified: !!email_verified_at, phone_verified: !!phone_verified_at };
+  const { password_hash, email_verified_at, ...publicUser } = user;
+  return { ...publicUser, email_verified: !!email_verified_at };
 }
 
 async function issueVerifyToken(userId, email) {
@@ -65,22 +61,12 @@ async function issueVerifyToken(userId, email) {
   await emailService.sendVerificationEmail(email, token);
 }
 
-const lastOtpAt = new Map(); // userId -> timestamp (blocks duplicate sends within 60s)
-async function issueOtp(userId, phone, email) {
-  if (Date.now() - (lastOtpAt.get(userId) || 0) < 60000) return; // already sent, skip duplicate email
-  lastOtpAt.set(userId, Date.now());
-  await Otp.invalidateAllForPhone(phone);
-  const code = generateOtpCode();
-  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
-  await Otp.createOtp(userId, phone, hashToken(code), expiresAt);
-  await sendOtpEmail(email, code);
-}
-
 // -------- registration --------
 
 async function register(req, res) {
   try {
     const { name, email, phone, password } = req.body;
+    const parsed = parseProfile(req.body);
 
     if (!name || typeof name !== "string" || name.trim().length < 2) {
       return res.status(400).json({ error: "Nom invalide (2 caractères minimum)" });
@@ -94,6 +80,8 @@ async function register(req, res) {
     if (!isValidPassword(password)) {
       return res.status(400).json({ error: `Le mot de passe doit contenir au moins ${PASSWORD_MIN_LENGTH} caractères` });
     }
+
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPhone = `+216${phone.trim()}`;
@@ -114,11 +102,10 @@ async function register(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const userId = await User.createUser(name.trim(), normalizedEmail, normalizedPhone, passwordHash, avatarUrl);
+    const userId = await User.createUser({ name: name.trim(), email: normalizedEmail, phone: normalizedPhone, passwordHash, avatar: avatarUrl, profile: parsed.data });
     const token = generateAccessToken(userId);
 
     try { await issueVerifyToken(userId, normalizedEmail); } catch (err) { console.error("Erreur envoi email de vérification:", err.message); }
-    try { await issueOtp(userId, normalizedPhone, normalizedEmail); } catch (err) { console.error("Erreur envoi code OTP:", err.message); }
 
     const refreshToken = await issueRefreshToken(userId);
     setRefreshCookie(res, refreshToken);
@@ -126,44 +113,10 @@ async function register(req, res) {
     res.status(201).json({
       token,
       // CHANGED: status starts pending_category (see users.status DEFAULT in migration)
-      user: { id: userId, name: name.trim(), email: normalizedEmail, phone: normalizedPhone, avatar: avatarUrl, email_verified: false, phone_verified: false, status: "pending_category" },
+      user: { id: userId, name: name.trim(), email: normalizedEmail, phone: normalizedPhone, avatar: avatarUrl, ...parsed.data, email_verified: false, status: "pending_category" },
     });
   } catch (err) {
     console.error("Erreur inscription:", err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-}
-
-async function sendOtp(req, res) {
-  try {
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
-    if (user.phone_verified_at) return res.json({ message: "Numéro déjà vérifié" });
-
-    await issueOtp(user.id, user.phone, user.email);
-    res.json({ message: "Code envoyé" });
-  } catch (err) {
-    console.error("Erreur envoi OTP:", err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-}
-
-async function verifyOtp(req, res) {
-  try {
-    const { code } = req.body;
-    if (!isValidOtpCode(code)) return res.status(400).json({ error: "Code invalide" });
-
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
-
-    const record = await Otp.findValidOtp(user.phone, hashToken(code.trim()));
-    if (!record) return res.status(400).json({ error: "Code invalide ou expiré" });
-
-    await Otp.markUsed(record.id);
-    await User.setPhoneVerified(user.id);
-    res.json({ message: "Numéro vérifié" });
-  } catch (err) {
-    console.error("Erreur vérification OTP:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 }
@@ -217,7 +170,7 @@ async function login(req, res) {
 
     res.json({
       token: generateAccessToken(user.id),
-      user: { id: user.id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, email_verified: !!user.email_verified_at, phone_verified: !!user.phone_verified_at, status: user.status },
+      user: toPublicUser(await User.findById(user.id)),
     });
   } catch (err) {
     console.error("Erreur connexion:", err);
@@ -253,7 +206,9 @@ async function updateProfile(req, res) {
       return res.status(409).json({ error: "Cet email est déjà utilisé" });
     }
 
-    const updates = { name: name !== undefined ? name.trim() : undefined, email: emailChanged ? normalizedEmail : undefined };
+    const parsed = parseProfile(req.body);
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+    const updates = { ...parsed.data, name: name !== undefined ? name.trim() : undefined, email: emailChanged ? normalizedEmail : undefined };
 
     if (req.file) {
       const type = detectImageType(req.file.buffer);
@@ -424,6 +379,6 @@ async function logout(req, res) {
 }
 
 module.exports = {
-  register, sendOtp, verifyOtp, getPlans, submitSubscription, login, me, updateProfile, changePassword,
+  register, getPlans, submitSubscription, login, me, updateProfile, changePassword,
   forgotPassword, resetPassword, verifyEmail, resendVerification, refresh, logout,
 };

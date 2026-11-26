@@ -70,6 +70,34 @@
           <span class="field__error" id="phone-error">Enter a valid 8-digit Tunisian number</span>
         </div>
 
+        <div class="field-row">
+          <div class="field">
+            <label for="su-gender">Gender</label>
+            <div class="field__control">
+              <select id="su-gender" name="gender" required>
+                <option value="" disabled selected>Select</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="su-age">Age</label>
+            <div class="field__control"><input type="number" id="su-age" name="age" placeholder="25" min="10" max="100" inputmode="numeric" required /></div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="su-height">Height (cm)</label>
+            <div class="field__control"><input type="number" id="su-height" name="height" placeholder="170" min="100" max="250" inputmode="numeric" /></div>
+          </div>
+          <div class="field">
+            <label for="su-weight">Weight (kg)</label>
+            <div class="field__control"><input type="number" id="su-weight" name="weight" placeholder="65" min="30" max="300" step="0.1" inputmode="decimal" /></div>
+          </div>
+        </div>
+
         <div class="field field--password">
           <label for="su-password">Password</label>
           <div class="field__control">
@@ -109,28 +137,6 @@
           <span class="btn-label">Create Account</span>
         </button>
       </form>
-
-      <form class="auth-form otp-form" id="otp-form" style="display:none;">
-        <p class="otp-intro">Enter the 6-digit code sent to <b id="otp-phone-display"></b></p>
-        <div class="field">
-          <label for="otp-code">Verification code</label>
-          <div class="field__control">
-            <input type="text" id="otp-code" name="otp" placeholder="123456" required maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" />
-          </div>
-          <span class="field__error" id="otp-error">Incorrect code, try again</span>
-        </div>
-        <button type="submit" class="auth-form__submit" id="otp-submit">
-          <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
-          <span class="btn-label">Verify &amp; Create Account</span>
-        </button>
-        <p class="otp-resend">Didn't get it? <a href="#" id="otp-resend">Resend code</a></p>
-      </form>
-
-      <div class="signup-success" id="signup-success" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-        <h2>Account created!</h2>
-        <p>Redirecting you to log in…</p>
-      </div>
 
 
     </div>

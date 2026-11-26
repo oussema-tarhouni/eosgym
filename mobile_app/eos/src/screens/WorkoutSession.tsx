@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, Vibration, StyleSheet } from 'react-native';
-import Svg, { Circle, Line } from 'react-native-svg'; // npx expo install react-native-svg
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/dark';
+import TimerDial from '../components/TimerDial';
 
 export type SessionEx = { name: string; sets: number; reps: string; rest?: number; workSec?: number };
 type Step = { kind: 'warmup' | 'work' | 'rest'; label: string; sub: string; sec?: number };
@@ -43,28 +43,6 @@ export function buildSteps(exercises: SessionEx[], groups: string[]): Step[] {
 
 const fmt = (n: number) => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
 const tint = { warmup: '#F5A524', work: colors.goldLight, rest: colors.greenLight } as const;
-const SZ = 270, R = 118, C = 2 * Math.PI * R, M = SZ / 2;
-
-function Dial({ frac, color, children }: { frac: number; color: string; children: React.ReactNode }) {
-  const ang = (frac * 360 - 90) * (Math.PI / 180);
-  return (
-    <View style={{ width: SZ, height: SZ, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={SZ} height={SZ} style={StyleSheet.absoluteFill}>
-        {Array.from({ length: 60 }, (_, i) => {
-          const a = (i * 6 - 90) * (Math.PI / 180), big = i % 5 === 0, r1 = R + 14, r2 = R + (big ? 4 : 8);
-          return <Line key={i} x1={M + r1 * Math.cos(a)} y1={M + r1 * Math.sin(a)} x2={M + r2 * Math.cos(a)} y2={M + r2 * Math.sin(a)}
-            stroke={big ? colors.white : colors.gray} strokeWidth={big ? 2 : 1} opacity={big ? 0.9 : 0.45} />;
-        })}
-        <Circle cx={M} cy={M} r={R - 12} stroke="rgba(245,244,240,0.08)" strokeWidth={10} fill="none" />
-        <Circle cx={M} cy={M} r={R - 12} stroke={color} strokeWidth={10} fill="none" strokeLinecap="round"
-          strokeDasharray={`${C * 0.9 * Math.min(Math.max(frac, 0), 1)} ${C}`} rotation={-90} origin={`${M}, ${M}`} />
-        <Line x1={M} y1={M} x2={M + (R - 4) * Math.cos(ang)} y2={M + (R - 4) * Math.sin(ang)} stroke={color} strokeWidth={2.5} strokeLinecap="round" />
-        <Circle cx={M} cy={M} r={5} fill={color} />
-      </Svg>
-      {children}
-    </View>
-  );
-}
 
 export default function WorkoutSession({ visible, title, exercises, groups, onClose }:
   { visible: boolean; title?: string; exercises: SessionEx[]; groups: string[]; onClose: () => void }) {
@@ -100,6 +78,11 @@ export default function WorkoutSession({ visible, title, exercises, groups, onCl
   const c = step ? tint[step.kind] : colors.goldLight;
   const frac = !step ? 1 : phase === 'count' ? cd / 3 : step.sec ? Math.max(left, 0) / step.sec : (up % 60) / 60;
   const label = step ? (step.sec ? fmt(Math.max(left, 0)) : fmt(up)) : '';
+  // where the ring will be one second from now, so it glides instead of ticking
+  const target = !step ? 1 : phase === 'count' ? Math.max(cd - 1, 0) / 3 : step.sec ? Math.max(left - 1, 0) / step.sec : ((up % 60) + 1) / 60;
+  const running = (phase === 'run' || phase === 'count') && !paused;
+  const urgent = phase === 'run' && !!step?.sec && left > 0 && left <= 5;
+  const hint = phase === 'ready' ? 'READY' : paused ? 'PAUSED' : step?.kind === 'rest' ? 'REST' : step?.sec ? 'REMAINING' : 'ELAPSED';
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -124,14 +107,12 @@ export default function WorkoutSession({ visible, title, exercises, groups, onCl
             <Text style={s.name}>{step.label}</Text>
             <Text style={s.sub}>{step.sub}</Text>
 
-            <Dial frac={frac} color={c}>
-              {phase === 'count'
-                ? <Text style={[s.clock, { color: c, fontSize: 110 }]}>{Math.max(cd, 1)}</Text>
-                : <>
-                    <Text style={[s.clock, { color: paused ? colors.gray : colors.white }]}>{label}</Text>
-                    <Text style={s.hint}>{phase === 'ready' ? 'READY' : paused ? 'PAUSED' : step.sec ? 'COUNTDOWN' : 'CHRONO'}</Text>
-                  </>}
-            </Dial>
+            <TimerDial
+              frac={frac} target={target} running={running} resetKey={`${idx}-${phase}`}
+              color={urgent ? colors.red : c}
+              time={phase === 'count' ? String(Math.max(cd, 1)) : label}
+              hint={hint} countdown={phase === 'count'}
+            />
 
             <View style={s.row}>
               <TouchableOpacity style={s.round} onPress={prev}><Feather name="skip-back" size={20} color={colors.white} /></TouchableOpacity>
@@ -168,8 +149,6 @@ const s = StyleSheet.create({
   kind: { fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
   name: { color: colors.white, fontSize: 24, fontWeight: '800', textAlign: 'center' },
   sub: { color: colors.gray, fontSize: 14, textAlign: 'center' },
-  clock: { fontSize: 54, fontWeight: '300', fontVariant: ['tabular-nums'], letterSpacing: 2 },
-  hint: { color: colors.gray, fontSize: 11, letterSpacing: 2, marginTop: 2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 },
   round: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(245,244,240,0.08)', alignItems: 'center', justifyContent: 'center' },
   main: { width: 72, height: 72, borderRadius: 36 },

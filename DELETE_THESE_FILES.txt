@@ -1,0 +1,8 @@
+backend/src/models/otpModel.js
+backend/src/routes/email-otp.js
+backend/src/services/otpEmailService.js
+backend/src/services/sms.service.js
+eos_angular_project/src/app/pages/otp/otp.component.css
+eos_angular_project/src/app/pages/otp/otp.component.html
+eos_angular_project/src/app/pages/otp/otp.component.ts
+mobile_app/eos/src/screens/VerifyOtpScreen.tsx

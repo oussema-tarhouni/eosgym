@@ -14,8 +14,6 @@ import { AdminService } from '../../core/admin.service';
 export class AdminGateComponent {
   code = '';
   username = '';
-  dbUsername = '';
-  dbPassword = '';
   password = '';
   error = '';
   loading = false;
@@ -31,8 +29,6 @@ export class AdminGateComponent {
       await this.admin.verifyGate({
         code: this.code,
         username: this.username,
-        dbUsername: this.dbUsername,
-        dbPassword: this.dbPassword,
         password: this.password,
       });
       this.router.navigate(['/access-admin']);

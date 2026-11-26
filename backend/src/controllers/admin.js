@@ -1,6 +1,8 @@
 const Admin = require("../models/adminModel");
 const Approval = require("../models/approvalModel"); // CHANGED
 const storage = require("../services/storage");
+const bcrypt = require("bcryptjs");
+const { isValidEmail, isValidPassword, parseProfile } = require("../utils/validation");
 const { detectImageType } = require("../utils/imageType");
 
 async function handleProductImageUpload(req) {
@@ -25,8 +27,31 @@ module.exports = {
 
   // users
   listUsers: wrap(async (req, res) => res.json(await Admin.listUsers())),
+  createUser: wrap(async (req, res) => {
+    const b = req.body || {};
+    if (!b.name || String(b.name).trim().length < 2) return res.status(400).json({ error: "Nom invalide" });
+    if (!isValidEmail(b.email)) return res.status(400).json({ error: "Email invalide" });
+    if (!isValidPassword(b.password)) return res.status(400).json({ error: "Mot de passe: 8 caractères minimum" });
+    const parsed = parseProfile(b);
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+    try {
+      const id = await Admin.createUser({ ...b, ...parsed.data, name: b.name.trim(), email: b.email.trim().toLowerCase() }, await bcrypt.hash(b.password, 10));
+      res.status(201).json({ id });
+    } catch (e) {
+      if (e.code === "ER_DUP_ENTRY") return res.status(409).json({ error: "Email ou téléphone déjà utilisé" });
+      throw e;
+    }
+  }),
+  resetUserPassword: wrap(async (req, res) => {
+    if (!isValidPassword(req.body?.password)) return res.status(400).json({ error: "Mot de passe: 8 caractères minimum" });
+    const ok = await Admin.setUserPassword(req.params.id, await bcrypt.hash(req.body.password, 10));
+    if (!ok) return res.status(404).json({ error: "Introuvable" });
+    res.json({ message: "Mot de passe réinitialisé" });
+  }),
   updateUser: wrap(async (req, res) => {
-    await Admin.updateUser(req.params.id, req.body);
+    const parsed = parseProfile(req.body || {});
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+    await Admin.updateUser(req.params.id, { ...req.body, ...parsed.data });
     res.json({ message: "Utilisateur mis à jour" });
   }),
   deleteUser: wrap(async (req, res) => {
@@ -132,6 +157,16 @@ module.exports = {
     const ok = await Admin.deleteProduct(req.params.id);
     if (!ok) return res.status(404).json({ error: "Introuvable" });
     res.json({ message: "Produit supprimé" });
+  }),
+
+  // orders
+  listOrders: wrap(async (req, res) => res.json(await Admin.listOrders())),
+  orderItems: wrap(async (req, res) => res.json(await Admin.getOrderItems(req.params.id))),
+  updateOrder: wrap(async (req, res) => {
+    if (!["pending", "paid", "fulfilled", "cancelled"].includes(req.body?.status)) return res.status(400).json({ error: "Statut invalide" });
+    const ok = await Admin.updateOrderStatus(req.params.id, req.body.status);
+    if (!ok) return res.status(404).json({ error: "Introuvable" });
+    res.json({ message: "Commande mise à jour" });
   }),
 
   // class categories

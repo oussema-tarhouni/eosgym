@@ -10,7 +10,9 @@ router.use(requireGateSession);
 router.get("/stats", controller.stats);
 
 router.get("/users", controller.listUsers);
+router.post("/users", controller.createUser);
 router.put("/users/:id", controller.updateUser);
+router.post("/users/:id/reset-password", controller.resetUserPassword);
 router.delete("/users/:id", controller.deleteUser);
 
 router.get("/pending-approvals", controller.listPendingApprovals);
@@ -64,6 +66,16 @@ router.post("/posters", upload.single("image"), contentController.createPoster);
 router.put("/posters/:id", upload.single("image"), contentController.updatePoster);
 router.delete("/posters/:id", contentController.deletePoster);
 
+router.get("/orders", controller.listOrders);
+router.get("/orders/:id/items", controller.orderItems);
+router.put("/orders/:id", controller.updateOrder);
+
+router.get("/announcements", contentController.listAnnouncementsAdmin);
+router.post("/announcements", upload.single("image"), contentController.createAnnouncement);
+router.put("/announcements/:id", upload.single("image"), contentController.updateAnnouncement);
+router.delete("/announcements/:id", contentController.deleteAnnouncement);
+
+router.post("/notifications/send", upload.single("image"), contentController.sendNotification);
 router.get("/notifications", controller.listNotifications);
 router.post("/notifications", controller.createNotification);
 router.put("/notifications/:id", controller.updateNotification);

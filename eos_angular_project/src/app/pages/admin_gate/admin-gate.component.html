@@ -2,16 +2,10 @@
   <form class="gate-card" (ngSubmit)="submit()">
     <h2>Admin Access</h2>
     <label>Username
-      <input [(ngModel)]="username" name="username" required />
-    </label>
-    <label>DB Username
-      <input [(ngModel)]="dbUsername" name="dbUsername" required />
-    </label>
-    <label>DB Password
-      <input type="password" [(ngModel)]="dbPassword" name="dbPassword" required />
+      <input [(ngModel)]="username" name="username" required autocomplete="username" />
     </label>
     <label>Password
-      <input type="password" [(ngModel)]="password" name="password" required />
+      <input type="password" [(ngModel)]="password" name="password" required autocomplete="current-password" />
     </label>
     <p class="gate-error" *ngIf="error">{{ error }}</p>
     <button type="submit" [disabled]="loading">{{ loading ? 'Checking…' : 'Continue' }}</button>

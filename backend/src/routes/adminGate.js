@@ -7,4 +7,7 @@ router.post("/generate", controller.generate);
 router.get("/check/:code", controller.check);
 router.post("/verify", authLimiter, controller.verify);
 
+router.get("/session", controller.checkSession);
+router.post("/logout", controller.logout);
+
 module.exports = router;

@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
+import { onboardingAnswers } from './OnboardingScreen';
 import { colors } from '../theme/dark';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import {
@@ -48,7 +49,12 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
-      await register(name, email, phone, password);
+      const o = onboardingAnswers; // collected in the Onboarding steps before this screen
+      await register({
+        name, email, phone, password,
+        gender: o.gender?.toLowerCase(), age: o.age, height_cm: o.heightCm, weight_kg: o.weightKg,
+        goals: o.goals, experience: o.experience, days_per_week: o.daysPerWeek,
+      });
       // AppNavigator's RootSwitch reads the fresh user.status and advances
       // to plan selection on its own — no explicit navigation needed here.
     } catch (err: any) {

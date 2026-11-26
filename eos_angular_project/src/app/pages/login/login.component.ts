@@ -45,7 +45,7 @@ export class LoginComponent implements AfterViewInit {
         const { user } = await this.auth.login(email, password);
         // Resume unfinished signup
         if (user.status === 'pending_category') {
-          this.router.navigate(user.phone_verified ? ['/select-plan'] : ['/otp'], user.phone_verified ? {} : { queryParams: { email: user.email } });
+          this.router.navigate(['/select-plan']);
         } else if (user.status === 'pending_approval') {
           this.router.navigate(['/pending']);
         } else {

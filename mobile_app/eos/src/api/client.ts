@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const API_URL = 'https://endorsed-reproduced-taylor-kernel.trycloudflare.com/api';
+export const API_URL = 'https://copy-laser-take-concern.trycloudflare.com/api';
 
 const client = axios.create({ baseURL: API_URL });
 

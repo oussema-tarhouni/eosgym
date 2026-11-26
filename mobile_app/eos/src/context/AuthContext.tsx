@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authApi } from '../api/auth';
+import { authApi, RegisterData } from '../api/auth';
 
-type User = { id: string; name: string; email: string; phone?: string; level?: string; status?: string; phone_verified?: boolean } | null;
+type User = { id: string; name: string; email: string; phone?: string; level?: string; status?: string; gender?: string; age?: number } | null;
 
 type AuthContextType = {
   user: User;
   accessToken: string | null;
   loading: boolean; // true while restoring session on app boot
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, phone: string, password: string) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   me: () => Promise<User>;
@@ -95,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refreshUser();
   };
 
-  const register = async (name: string, email: string, phone: string, password: string) => {
-    const res = await authApi.register(name, email, phone, password);
+  const register = async (data: RegisterData) => {
+    const res = await authApi.register(data);
     const { token, userData } = unwrap(res);
     if (!token) throw new Error('No accessToken in register response — check console log above.');
     await persist(token, userData);

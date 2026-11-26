@@ -1,131 +1,407 @@
 <div class="adm-shell">
-  <aside class="adm-nav">
-    <h2>Admin</h2>
-    <a routerLink="/app" class="adm-back-link">← Back to app</a>
-    <nav>
-      <button *ngFor="let r of resources" class="adm-nav-btn"
-              [class.adm-active]="r.key === active.key && activeSection === 'resource'"
-              (click)="select(r)">{{ r.title }}</button>
-      <button class="adm-nav-btn" [class.adm-active]="activeSection === 'approvals'"
-              (click)="showApprovals()">Approvals</button>
-      <button class="adm-nav-btn" [class.adm-active]="activeSection === 'send'"
-              (click)="showSend()">Send Notification</button>
-    </nav>
-    <div class="adm-stats" *ngIf="stats">
-      <div>Users: {{ stats.users }}</div>
-      <div>Trainers: {{ stats.trainers }}</div>
-      <div>Upcoming classes: {{ stats.upcoming_classes }}</div>
-      <div>Active memberships: {{ stats.active_memberships }}</div>
-      <div>Bookings today: {{ stats.bookings_today }}</div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <div class="adm-scrim" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
+  <aside class="adm-nav" [class.adm-nav-open]="sidebarOpen">
+    <div class="adm-brand">
+      <div class="adm-brand-mark">E</div>
+      <div>
+        <div class="adm-brand-name">EOS Fitness</div>
+        <div class="adm-brand-sub">Admin console</div>
+      </div>
     </div>
+
+    <nav class="adm-nav-scroll">
+      <button class="adm-nav-btn" [class.adm-active]="activeSection === 'overview'" (click)="showOverview()">
+        <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['overview']"/></svg>
+        <span>Dashboard</span>
+      </button>
+
+      <div class="adm-nav-group" *ngFor="let g of navGroups">
+        <div class="adm-nav-label">{{ g.label }}</div>
+        <button *ngFor="let r of g.items" class="adm-nav-btn"
+                [class.adm-active]="r.key === active.key && activeSection === 'resource'"
+                (click)="select(r)">
+          <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons[r.key]"/></svg>
+          <span>{{ r.title }}</span>
+        </button>
+      </div>
+
+      <div class="adm-nav-group">
+        <div class="adm-nav-label">Requests</div>
+        <button class="adm-nav-btn" [class.adm-active]="activeSection === 'approvals'" (click)="showApprovals()">
+          <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['approvals']"/></svg>
+          <span>Approvals</span>
+          <span class="adm-pill" *ngIf="pendingCount">{{ pendingCount }}</span>
+        </button>
+        <button class="adm-nav-btn" [class.adm-active]="activeSection === 'send'" (click)="showSend()">
+          <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['send']"/></svg>
+          <span>Send notification</span>
+        </button>
+      </div>
+    </nav>
+
+    <a routerLink="/app" class="adm-back-link">
+      <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['back']"/></svg>
+      Back to app
+    </a>
   </aside>
 
-  <main class="adm-main">
-    <div class="adm-header" *ngIf="activeSection === 'resource'">
-      <h1>{{ active.title }}</h1>
-      <button class="adm-btn-primary" (click)="openCreate()">+ Add</button>
-    </div>
+  <!-- ============ MAIN ============ -->
+  <div class="adm-content">
 
-    <p class="adm-error" *ngIf="error">{{ error }}</p>
-
-    <ng-container *ngIf="activeSection === 'resource'">
-      <p *ngIf="loading">Loading…</p>
-
-      <table class="adm-table" *ngIf="!loading && rows.length">
-        <thead>
-          <tr>
-            <th *ngFor="let c of active.columns">{{ c }}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of rows">
-            <td *ngFor="let c of active.columns">{{ row[c] }}</td>
-            <td class="adm-row-actions">
-              <button (click)="openEdit(row)">Edit</button>
-              <button class="adm-btn-danger" (click)="remove(row)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p *ngIf="!loading && !rows.length">No records.</p>
-    </ng-container>
-
-    <ng-container *ngIf="activeSection === 'send'">
-      <div class="adm-header"><h1>Send Notification</h1></div>
-      <div class="adm-send">
-        <label>Message
-          <textarea [(ngModel)]="notifMessage" name="notifMessage" rows="3" maxlength="500"></textarea>
-        </label>
-        <div class="adm-send-audience">
-          <label><input type="radio" name="aud" value="all" [(ngModel)]="notifAudience" /> All users ({{ notifUsers.length }})</label>
-          <label><input type="radio" name="aud" value="selected" [(ngModel)]="notifAudience" /> Selected users ({{ notifSelected.size }})</label>
-        </div>
-        <div class="adm-send-list" *ngIf="notifAudience === 'selected'">
-          <label *ngFor="let u of notifUsers">
-            <input type="checkbox" [checked]="notifSelected.has(u.id)" (change)="toggleNotifUser(u.id)" />
-            {{ u.name }} — {{ u.email }}
-          </label>
-        </div>
-        <p *ngIf="notifInfo">{{ notifInfo }}</p>
-        <button class="adm-btn-primary" [disabled]="notifSending" (click)="sendNotification()">{{ notifSending ? 'Sending…' : 'Send' }}</button>
+    <header class="adm-topbar">
+      <button class="adm-icon-btn adm-burger" (click)="sidebarOpen = !sidebarOpen" aria-label="Menu">
+        <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['menu']"/></svg>
+      </button>
+      <div class="adm-search" *ngIf="activeSection === 'resource'">
+        <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['search']"/></svg>
+        <input type="text" placeholder="Search {{ active.title.toLowerCase() }}" [(ngModel)]="search" name="search" (ngModelChange)="onSearch()" />
       </div>
-    </ng-container>
+      <time class="adm-date">{{ today | date:'EEE d MMM y' }}</time>
+    </header>
 
-    <!-- CHANGED: pending-account approvals -->
-    <ng-container *ngIf="activeSection === 'approvals'">
-      <div class="adm-header"><h1>Pending Approvals</h1></div>
-      <p *ngIf="approvalsLoading">Loading…</p>
+    <main class="adm-main">
+      <p class="adm-error" *ngIf="error">{{ error }}</p>
 
-      <table class="adm-table" *ngIf="!approvalsLoading && pendingApprovals.length">
-        <thead>
-          <tr>
-            <th>Name</th><th>Email</th><th>Phone</th><th>Category</th><th>Plan</th><th>Price</th><th>Requested</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of pendingApprovals">
-            <td>{{ row.name }}</td>
-            <td>{{ row.email }}</td>
-            <td>{{ row.phone }}</td>
-            <td>{{ row.preferred_category }}</td>
-            <td>{{ row.plan_name }} ({{ row.duration_months }} mo)</td>
-            <td>{{ row.price }} TND</td>
-            <td>{{ row.requested_at | date:'short' }}</td>
-            <td class="adm-row-actions">
-              <button class="adm-btn-success" (click)="approveUser(row)">Approve</button>
-              <button class="adm-btn-danger" (click)="rejectUser(row)">Reject</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- ===== OVERVIEW ===== -->
+      <ng-container *ngIf="activeSection === 'overview'">
+        <div class="adm-page-head">
+          <h1 class="adm-headline">{{ stats ? headline : 'Loading today’s numbers' }}</h1>
+          <div class="adm-head-actions">
+            <button class="adm-btn adm-btn-ghost" (click)="showSend()">
+              <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['send']"/></svg> Send notification
+            </button>
+            <button class="adm-btn adm-btn-primary" (click)="go('classes'); openCreate()">
+              <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['plus']"/></svg> New class
+            </button>
+          </div>
+        </div>
 
-      <p *ngIf="!approvalsLoading && !pendingApprovals.length">No pending requests.</p>
-    </ng-container>
-  </main>
+        <!-- one large figure, the rest as a ruled list -->
+        <section class="adm-hero">
+          <button class="adm-hero-main" (click)="go('bookings')">
+            <span class="adm-hero-label">Bookings today</span>
+            <span class="adm-hero-num">{{ stats?.bookings_today ?? '–' }}</span>
+            <span class="adm-hero-sub">Open the bookings table →</span>
+          </button>
+          <ul class="adm-ruled">
+            <li *ngFor="let c of sideStats" (click)="go(c.go)">
+              <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons[c.icon]"/></svg>
+              <span>{{ c.label }}</span>
+              <b>{{ stats ? (stats[c.key] ?? 0) : '–' }}</b>
+            </li>
+          </ul>
+        </section>
 
+        <div class="adm-grid-2">
+          <!-- Pending approvals -->
+          <section class="adm-card">
+            <div class="adm-card-head">
+              <div>
+                <h3>Pending approvals</h3>
+                <p class="adm-muted">New sign-ups waiting for your review</p>
+              </div>
+              <button class="adm-link" (click)="showApprovals()">View all</button>
+            </div>
+            <ul class="adm-list" *ngIf="pendingApprovals.length">
+              <li *ngFor="let row of pendingApprovals.slice(0, 5)">
+                <div class="adm-avatar" [style.--h]="hue(row.name)">{{ initials(row.name) }}</div>
+                <div class="adm-list-main">
+                  <strong>{{ row.name }}</strong>
+                  <small>{{ row.plan_name }} · {{ row.price }} TND</small>
+                </div>
+                <div class="adm-list-actions">
+                  <button class="adm-btn-sm adm-btn-success" (click)="approveUser(row)">Approve</button>
+                  <button class="adm-btn-sm adm-btn-danger-o" (click)="rejectUser(row)">Reject</button>
+                </div>
+              </li>
+            </ul>
+            <div class="adm-empty adm-empty-sm" *ngIf="!pendingApprovals.length">
+              <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['check']"/></svg>
+              <p>You're all caught up — no pending requests.</p>
+            </div>
+          </section>
+
+          <!-- Distributions -->
+          <section class="adm-card">
+            <div class="adm-card-head">
+              <div>
+                <h3>Activity breakdown</h3>
+                <p class="adm-muted">Live distribution from your data</p>
+              </div>
+            </div>
+
+            <div class="adm-dist">
+              <h4>Members by status</h4>
+              <div class="adm-bar-stack" *ngIf="usersByStatus.length">
+                <span *ngFor="let d of usersByStatus" [attr.data-tone]="d.tone" [style.flex]="d.count" [title]="d.label + ': ' + d.count"></span>
+              </div>
+              <ul class="adm-legend">
+                <li *ngFor="let d of usersByStatus"><i [attr.data-tone]="d.tone"></i>{{ d.label }}<b>{{ d.count }}</b></li>
+                <li *ngIf="!usersByStatus.length" class="adm-muted">No data yet</li>
+              </ul>
+            </div>
+
+            <div class="adm-dist">
+              <h4>Bookings by status</h4>
+              <div class="adm-bar-stack" *ngIf="bookingsByStatus.length">
+                <span *ngFor="let d of bookingsByStatus" [attr.data-tone]="d.tone" [style.flex]="d.count" [title]="d.label + ': ' + d.count"></span>
+              </div>
+              <ul class="adm-legend">
+                <li *ngFor="let d of bookingsByStatus"><i [attr.data-tone]="d.tone"></i>{{ d.label }}<b>{{ d.count }}</b></li>
+                <li *ngIf="!bookingsByStatus.length" class="adm-muted">No data yet</li>
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        <!-- Recent bookings -->
+        <section class="adm-card adm-card-flush">
+          <div class="adm-card-head adm-pad">
+            <div>
+              <h3>Recent bookings</h3>
+              <p class="adm-muted">Latest class reservations</p>
+            </div>
+            <button class="adm-link" (click)="go('bookings')">View all</button>
+          </div>
+          <div class="adm-table-wrap" *ngIf="recentBookings.length">
+            <table class="adm-table">
+              <thead><tr><th>Member</th><th>Class</th><th>Starts</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let b of recentBookings">
+                  <td>
+                    <div class="adm-cell-user">
+                      <div class="adm-avatar adm-avatar-sm" [style.--h]="hue(b.user_name)">{{ initials(b.user_name) }}</div>
+                      <span>{{ b.user_name }}</span>
+                    </div>
+                  </td>
+                  <td>{{ b.class_name }}</td>
+                  <td class="adm-nowrap">{{ b.starts_at | date:'MMM d, HH:mm' }}</td>
+                  <td><span class="adm-badge" [attr.data-tone]="tone(b.status)">{{ pretty(b.status) }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="adm-empty adm-empty-sm" *ngIf="!recentBookings.length">
+            <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['inbox']"/></svg>
+            <p>No bookings yet.</p>
+          </div>
+        </section>
+      </ng-container>
+
+      <!-- ===== RESOURCE TABLES ===== -->
+      <ng-container *ngIf="activeSection === 'resource'">
+        <div class="adm-page-head">
+          <div>
+            <h1>{{ active.title }}</h1>
+            <p class="adm-muted">{{ rows.length }} total record{{ rows.length === 1 ? '' : 's' }}</p>
+          </div>
+          <div class="adm-head-actions">
+            <button class="adm-btn adm-btn-primary" (click)="openCreate()">
+              <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['plus']"/></svg> Add {{ active.title.slice(0, -1).toLowerCase() }}
+            </button>
+          </div>
+        </div>
+
+        <section class="adm-card adm-card-flush">
+          <div class="adm-loading" *ngIf="loading"><span class="adm-spinner"></span> Loading…</div>
+
+          <div class="adm-table-wrap" *ngIf="!loading && pagedRows.length">
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th *ngFor="let c of active.columns">{{ colLabel(c) }}</th>
+                  <th class="adm-th-actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of pagedRows">
+                  <td *ngFor="let c of active.columns" [ngSwitch]="cellKind(c)">
+                    <div *ngSwitchCase="'avatar'" class="adm-cell-user">
+                      <div class="adm-avatar adm-avatar-sm" [style.--h]="hue(row[c])">{{ initials(row[c]) }}
+                        <img *ngIf="row.avatar_url" [src]="row.avatar_url" alt="" (error)="$any($event.target).remove()" />
+                      </div>
+                      <span>{{ row[c] }}</span>
+                    </div>
+                    <span *ngSwitchCase="'badge'" class="adm-badge" [attr.data-tone]="tone(row[c])">{{ pretty(row[c] ?? '—') }}</span>
+                    <span *ngSwitchCase="'bool'" class="adm-badge" [attr.data-tone]="row[c] ? 'green' : 'gray'">{{ row[c] ? 'Active' : 'Inactive' }}</span>
+                    <span *ngSwitchCase="'verified'" class="adm-badge" [attr.data-tone]="row[c] ? 'green' : 'gray'">{{ row[c] ? 'Verified' : 'No' }}</span>
+                    <span *ngSwitchCase="'date'" class="adm-nowrap">{{ row[c] ? (row[c] | date:'MMM d, y, HH:mm') : '—' }}</span>
+                    <span *ngSwitchCase="'money'" class="adm-nowrap"><b>{{ row[c] }}</b> TND</span>
+                    <span *ngSwitchDefault class="adm-clip" [class.adm-muted]="c === 'id'">{{ row[c] ?? '—' }}</span>
+                  </td>
+                  <td class="adm-row-actions">
+                    <button class="adm-icon-btn adm-icon-btn-sm" (click)="openEdit(row)" title="Edit">
+                      <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['edit']"/></svg>
+                    </button>
+                    <button class="adm-icon-btn adm-icon-btn-sm adm-icon-danger" (click)="remove(row)" title="Delete">
+                      <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['trash']"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-empty" *ngIf="!loading && !pagedRows.length">
+            <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['inbox']"/></svg>
+            <h4>{{ search ? 'No matches found' : 'No records yet' }}</h4>
+            <p class="adm-muted">{{ search ? 'Try a different search term.' : 'Click “Add” to create the first one.' }}</p>
+          </div>
+
+          <footer class="adm-pager" *ngIf="!loading && filteredRows.length">
+            <span class="adm-muted">{{ rangeLabel }}</span>
+            <div class="adm-pager-ctl">
+              <button class="adm-icon-btn adm-icon-btn-sm" [disabled]="page === 1" (click)="prevPage()">
+                <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['chevL']"/></svg>
+              </button>
+              <span>Page {{ page }} / {{ totalPages }}</span>
+              <button class="adm-icon-btn adm-icon-btn-sm" [disabled]="page === totalPages" (click)="nextPage()">
+                <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['chevR']"/></svg>
+              </button>
+            </div>
+          </footer>
+        </section>
+      </ng-container>
+
+      <!-- ===== SEND NOTIFICATION ===== -->
+      <ng-container *ngIf="activeSection === 'send'">
+        <div class="adm-page-head">
+          <div>
+            <h1>Send notification</h1>
+            <p class="adm-muted">Push a message to your members' notification inbox.</p>
+          </div>
+        </div>
+
+        <div class="adm-grid-send">
+          <section class="adm-card">
+            <label class="adm-field">
+              <span>Message</span>
+              <textarea [(ngModel)]="notifMessage" name="notifMessage" rows="5" maxlength="500" placeholder="Write your announcement…"></textarea>
+              <small class="adm-muted adm-right">{{ notifMessage.length }} / 500</small>
+            </label>
+
+            <div class="adm-field">
+              <span>Audience</span>
+              <div class="adm-seg">
+                <label [class.adm-seg-on]="notifAudience === 'all'">
+                  <input type="radio" name="aud" value="all" [(ngModel)]="notifAudience" /> All users ({{ notifUsers.length }})
+                </label>
+                <label [class.adm-seg-on]="notifAudience === 'selected'">
+                  <input type="radio" name="aud" value="selected" [(ngModel)]="notifAudience" /> Selected ({{ notifSelected.size }})
+                </label>
+              </div>
+            </div>
+
+            <div class="adm-pick" *ngIf="notifAudience === 'selected'">
+              <label *ngFor="let u of notifUsers" class="adm-pick-row">
+                <input type="checkbox" [checked]="notifSelected.has(u.id)" (change)="toggleNotifUser(u.id)" />
+                <div class="adm-avatar adm-avatar-sm" [style.--h]="hue(u.name)">{{ initials(u.name) }}</div>
+                <div class="adm-list-main"><strong>{{ u.name }}</strong><small>{{ u.email }}</small></div>
+              </label>
+            </div>
+
+            <p class="adm-info" *ngIf="notifInfo">{{ notifInfo }}</p>
+            <div class="adm-form-actions">
+              <button class="adm-btn adm-btn-primary" [disabled]="notifSending" (click)="sendNotification()">
+                <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['send']"/></svg>
+                {{ notifSending ? 'Sending…' : 'Send notification' }}
+              </button>
+            </div>
+          </section>
+
+          <aside class="adm-card adm-preview">
+            <h4>Preview</h4>
+            <div class="adm-phone-notif">
+              <div class="adm-brand-mark adm-brand-mark-sm">E</div>
+              <div>
+                <strong>EOS Fitness</strong>
+                <p>{{ notifMessage || 'Your message will appear here.' }}</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </ng-container>
+
+      <!-- ===== APPROVALS ===== -->
+      <ng-container *ngIf="activeSection === 'approvals'">
+        <div class="adm-page-head">
+          <div>
+            <h1>Pending approvals</h1>
+            <p class="adm-muted">{{ pendingApprovals.length }} request{{ pendingApprovals.length === 1 ? '' : 's' }} awaiting review</p>
+          </div>
+        </div>
+
+        <section class="adm-card adm-card-flush">
+          <div class="adm-loading" *ngIf="approvalsLoading"><span class="adm-spinner"></span> Loading…</div>
+
+          <div class="adm-table-wrap" *ngIf="!approvalsLoading && pendingApprovals.length">
+            <table class="adm-table">
+              <thead>
+                <tr><th>Member</th><th>Phone</th><th>Category</th><th>Plan</th><th>Price</th><th>Requested</th><th class="adm-th-actions"></th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of pendingApprovals">
+                  <td>
+                    <div class="adm-cell-user">
+                      <div class="adm-avatar adm-avatar-sm" [style.--h]="hue(row.name)">{{ initials(row.name) }}</div>
+                      <div class="adm-stack"><strong>{{ row.name }}</strong><small>{{ row.email }}</small></div>
+                    </div>
+                  </td>
+                  <td class="adm-nowrap">{{ row.phone }}</td>
+                  <td><span class="adm-badge" data-tone="blue">{{ row.preferred_category }}</span></td>
+                  <td>{{ row.plan_name }} <small class="adm-muted">({{ row.duration_months }} mo)</small></td>
+                  <td class="adm-nowrap"><b>{{ row.price }}</b> TND</td>
+                  <td class="adm-nowrap">{{ row.requested_at | date:'MMM d, HH:mm' }}</td>
+                  <td class="adm-row-actions">
+                    <button class="adm-btn-sm adm-btn-success" (click)="approveUser(row)">Approve</button>
+                    <button class="adm-btn-sm adm-btn-danger-o" (click)="rejectUser(row)">Reject</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-empty" *ngIf="!approvalsLoading && !pendingApprovals.length">
+            <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['check']"/></svg>
+            <h4>All caught up</h4>
+            <p class="adm-muted">There are no pending requests right now.</p>
+          </div>
+        </section>
+      </ng-container>
+    </main>
+  </div>
+
+  <!-- ============ MODAL ============ -->
   <div class="adm-modal-backdrop" *ngIf="showForm" (click)="cancelForm()">
     <div class="adm-modal" (click)="$event.stopPropagation()">
-      <h3>{{ editingId ? 'Edit' : 'Add' }} {{ active.title.slice(0, -1) }}</h3>
+      <div class="adm-modal-head">
+        <h3>{{ editingId ? 'Edit' : 'Add' }} {{ active.title.slice(0, -1) }}</h3>
+        <button class="adm-icon-btn adm-icon-btn-sm" type="button" (click)="cancelForm()">
+          <svg class="adm-ic" viewBox="0 0 24 24"><path [attr.d]="icons['close']"/></svg>
+        </button>
+      </div>
       <form (ngSubmit)="save()">
-        <label *ngFor="let f of active.fields">
-          {{ f.label }}
-          <select *ngIf="f.type === 'select'" [(ngModel)]="formModel[f.key]" [name]="f.key">
-            <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
-          </select>
-          <input *ngIf="f.type === 'checkbox'" type="checkbox" [(ngModel)]="formModel[f.key]" [name]="f.key" />
-          <textarea *ngIf="f.type === 'textarea'" [(ngModel)]="formModel[f.key]" [name]="f.key" rows="3"></textarea>
-          <ng-container *ngIf="f.type === 'image'">
-            <img *ngIf="formModel[f.key + '_url']" [src]="formModel[f.key + '_url']" class="adm-file-preview" />
-            <input type="file" accept="image/*" [name]="f.key" (change)="onFileChange($event, f.key)" />
-          </ng-container>
-          <input *ngIf="!f.type || (f.type !== 'select' && f.type !== 'checkbox' && f.type !== 'textarea' && f.type !== 'image')"
-                 [type]="f.type || 'text'" [(ngModel)]="formModel[f.key]" [name]="f.key" />
-        </label>
+        <div class="adm-modal-body">
+          <label *ngFor="let f of active.fields" class="adm-field" [class.adm-field-check]="f.type === 'checkbox'">
+            <span>{{ f.label }}</span>
+            <select *ngIf="f.type === 'select'" [(ngModel)]="formModel[f.key]" [name]="f.key">
+              <option *ngFor="let o of f.options" [value]="o">{{ o || '— None —' }}</option>
+            </select>
+            <input *ngIf="f.type === 'checkbox'" type="checkbox" [(ngModel)]="formModel[f.key]" [name]="f.key" />
+            <textarea *ngIf="f.type === 'textarea'" [(ngModel)]="formModel[f.key]" [name]="f.key" rows="3"></textarea>
+            <ng-container *ngIf="f.type === 'image'">
+              <img *ngIf="formModel[f.key + '_url']" [src]="formModel[f.key + '_url']" class="adm-file-preview" />
+              <input type="file" accept="image/*" [name]="f.key" (change)="onFileChange($event, f.key)" />
+            </ng-container>
+            <input *ngIf="!f.type || (f.type !== 'select' && f.type !== 'checkbox' && f.type !== 'textarea' && f.type !== 'image')"
+                   [type]="f.type || 'text'" [(ngModel)]="formModel[f.key]" [name]="f.key" />
+          </label>
+        </div>
         <div class="adm-modal-actions">
-          <button type="button" class="adm-btn-secondary" (click)="cancelForm()">Cancel</button>
-          <button type="submit" class="adm-btn-primary">Save</button>
+          <button type="button" class="adm-btn adm-btn-ghost" (click)="cancelForm()">Cancel</button>
+          <button type="submit" class="adm-btn adm-btn-primary">Save changes</button>
         </div>
       </form>
     </div>

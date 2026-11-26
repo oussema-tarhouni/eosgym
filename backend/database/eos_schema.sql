@@ -8,12 +8,18 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(20) DEFAULT NULL UNIQUE,
+    gender ENUM('male','female') NULL,        -- onboarding answers (mobile) / signup form (web)
+    age TINYINT UNSIGNED NULL,
+    height_cm SMALLINT UNSIGNED NULL,
+    weight_kg DECIMAL(5,1) NULL,
+    goals VARCHAR(255) NULL,                 -- comma-separated, e.g. 'Build Muscle, Lose Weight'
+    experience VARCHAR(40) NULL,
+    days_per_week TINYINT UNSIGNED NULL,
     password_hash VARCHAR(255) NOT NULL,
     avatar MEDIUMTEXT DEFAULT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'user',
     level VARCHAR(20) NOT NULL DEFAULT 'Initiation', -- 'Initiation' | 'Debutant' | 'Intermediaire' | 'Avancee' | 'Expert' — set only by admin
     email_verified_at DATETIME DEFAULT NULL,
-    phone_verified_at DATETIME DEFAULT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'pending_category', -- pending_category | pending_approval | approved | rejected
     preferred_category VARCHAR(50) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -31,22 +37,6 @@ CREATE TABLE IF NOT EXISTS tokens (
     INDEX idx_tokens_user_type (user_id, type),
     INDEX idx_tokens_hash (token_hash),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Phone OTP codes (WhatsApp signup verification)
-CREATE TABLE IF NOT EXISTS otp_codes (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    code_hash CHAR(64) NOT NULL,
-    attempts TINYINT NOT NULL DEFAULT 0,
-    expires_at DATETIME NOT NULL,
-    used_at DATETIME DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_otp_user (user_id),
-    INDEX idx_otp_phone (phone),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    phone VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -248,7 +238,7 @@ CREATE TABLE IF NOT EXISTS posters (
   username VARCHAR(120) NOT NULL,
   location VARCHAR(150),
   text TEXT NOT NULL,
-  image_url VARCHAR(500),
+  image_url MEDIUMTEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
  

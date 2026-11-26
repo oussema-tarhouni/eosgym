@@ -148,6 +148,52 @@ const RESOURCES: ResourceDef[] = [
   },
 ];
 
+
+// ---- Dashboard UI config (sidebar groups, icons) ----
+const ICONS: Record<string, string> = {
+  overview: 'M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z',
+  users: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  trainers: 'M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM8.21 13.89L7 23l5-3 5 3-1.21-9.12',
+  classes: 'M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18',
+  'class-categories': 'M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01',
+  plans: 'M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM1 10h22',
+  memberships: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 11l2 2 4-4',
+  bookings: 'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 2h6v4H9zM9 14l2 2 4-4',
+  workouts: 'M22 12h-4l-3 9L9 3l-3 9H2',
+  'diet-logs': 'M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3',
+  products: 'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
+  posters: 'M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21',
+  notifications: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0',
+  approvals: 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM17 11l2 2 4-4',
+  send: 'M22 2L11 13M22 2l-7 20-4-9-9-4z',
+  search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35',
+  plus: 'M12 5v14M5 12h14',
+  menu: 'M3 12h18M3 6h18M3 18h18',
+  back: 'M19 12H5M12 19l-7-7 7-7',
+  edit: 'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z',
+  trash: 'M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2',
+  close: 'M18 6L6 18M6 6l12 12',
+  check: 'M20 6L9 17l-5-5',
+  chevL: 'M15 18l-6-6 6-6',
+  chevR: 'M9 18l6-6-6-6',
+  inbox: 'M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z',
+};
+
+const NAV_GROUPS: { label: string; items: string[] }[] = [
+  { label: 'People',   items: ['users', 'trainers', 'memberships'] },
+  { label: 'Training', items: ['classes', 'class-categories', 'bookings', 'workouts', 'diet-logs'] },
+  { label: 'Business', items: ['plans', 'products', 'posters'] },
+  { label: 'Messaging', items: ['notifications'] },
+];
+
+const STAT_CARDS = [
+  { key: 'users', label: 'Total users', icon: 'users', tone: 'gold', go: 'users' },
+  { key: 'trainers', label: 'Trainers', icon: 'trainers', tone: 'green', go: 'trainers' },
+  { key: 'upcoming_classes', label: 'Upcoming classes', icon: 'classes', tone: 'blue', go: 'classes' },
+  { key: 'active_memberships', label: 'Active memberships', icon: 'memberships', tone: 'purple', go: 'memberships' },
+  { key: 'bookings_today', label: 'Bookings today', icon: 'bookings', tone: 'orange', go: 'bookings' },
+];
+
 @Component({
   selector: 'app-admin',
   standalone: true,
@@ -157,7 +203,26 @@ const RESOURCES: ResourceDef[] = [
 })
 export class AdminComponent implements OnInit {
   resources = RESOURCES;
+  icons = ICONS;
+  statCards = STAT_CARDS;
+  navGroups = NAV_GROUPS.map(g => ({
+    label: g.label,
+    items: g.items.map(k => RESOURCES.find(r => r.key === k)!).filter(Boolean),
+  }));
   active: ResourceDef = RESOURCES[0];
+
+  // table UX
+  search = '';
+  page = 1;
+  pageSize = 10;
+  sidebarOpen = false;
+
+  // overview data
+  recentBookings: any[] = [];
+  bookingsByStatus: { label: string; count: number; pct: number; tone: string }[] = [];
+  usersByStatus: { label: string; count: number; pct: number; tone: string }[] = [];
+  overviewLoading = false;
+  today = new Date();
   rows: any[] = [];
   loading = false;
   error = '';
@@ -167,9 +232,7 @@ export class AdminComponent implements OnInit {
   formModel: any = {};
 
   stats: any = null;
-
-  // CHANGED — pending-account approvals
-  activeSection: 'resource' | 'approvals' | 'send' = 'resource';
+  activeSection: 'overview' | 'resource' | 'approvals' | 'send' = 'overview';
   notifMessage = '';
   notifAudience: 'all' | 'selected' = 'all';
   notifUsers: any[] = [];
@@ -184,7 +247,128 @@ export class AdminComponent implements OnInit {
   async ngOnInit() {
     this.stats = await this.admin.stats().catch(() => null);
     await this.loadCategories();
-    await this.select(this.resources[0]);
+    await this.showOverview();
+    this.admin.pendingApprovals().then(r => this.pendingCount = r.length).catch(() => {});
+  }
+
+  pendingCount = 0;
+
+  // ---------- Overview ----------
+  async showOverview() {
+    this.activeSection = 'overview';
+    this.showForm = false;
+    this.error = '';
+    this.sidebarOpen = false;
+    this.overviewLoading = true;
+    try {
+      const [stats, users, bookings, pending] = await Promise.all([
+        this.admin.stats().catch(() => this.stats),
+        this.admin.list('users').catch(() => [] as any[]),
+        this.admin.list('bookings').catch(() => [] as any[]),
+        this.admin.pendingApprovals().catch(() => [] as any[]),
+      ]);
+      this.stats = stats;
+      this.pendingApprovals = pending;
+      this.pendingCount = pending.length;
+      this.recentBookings = [...bookings]
+        .sort((a, b) => String(b.starts_at).localeCompare(String(a.starts_at)))
+        .slice(0, 6);
+      this.bookingsByStatus = this.distribution(bookings, 'status');
+      this.usersByStatus = this.distribution(users.filter((u: any) => u.role !== 'admin'), 'status');
+    } finally {
+      this.overviewLoading = false;
+    }
+  }
+
+  private distribution(list: any[], key: string) {
+    const counts = new Map<string, number>();
+    for (const r of list) {
+      const k = String(r[key] ?? 'unknown');
+      counts.set(k, (counts.get(k) || 0) + 1);
+    }
+    const total = list.length || 1;
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, count]) => ({ label: this.pretty(label), count, pct: Math.round((count / total) * 100), tone: this.tone(label) }));
+  }
+
+  go(key: string) {
+    const r = this.resources.find(x => x.key === key);
+    if (r) this.select(r);
+  }
+
+  // ---------- Table helpers ----------
+  get filteredRows(): any[] {
+    const q = this.search.trim().toLowerCase();
+    if (!q) return this.rows;
+    return this.rows.filter(r => this.active.columns.some(c => String(r[c] ?? '').toLowerCase().includes(q)));
+  }
+  get totalPages(): number { return Math.max(1, Math.ceil(this.filteredRows.length / this.pageSize)); }
+  get pagedRows(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredRows.slice(start, start + this.pageSize);
+  }
+  get rangeLabel(): string {
+    const n = this.filteredRows.length;
+    if (!n) return '0 results';
+    const a = (this.page - 1) * this.pageSize + 1;
+    return `${a}–${Math.min(n, a + this.pageSize - 1)} of ${n}`;
+  }
+  onSearch() { this.page = 1; }
+  prevPage() { if (this.page > 1) this.page--; }
+  nextPage() { if (this.page < this.totalPages) this.page++; }
+
+  pretty(v: string): string {
+    const t = String(v).replace(/_/g, ' ').trim();
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  colLabel(c: string): string {
+    if (c === 'id') return 'ID';
+    return this.pretty(c.replace(/_at$/, '').replace(/_id$/, ' ID'));
+  }
+  cellKind(c: string): 'avatar' | 'badge' | 'bool' | 'date' | 'money' | 'verified' | 'text' {
+    if (['name', 'user_name', 'username'].includes(c)) return 'avatar';
+    if (['status', 'role', 'level'].includes(c)) return 'badge';
+    if (['is_active', 'is_read'].includes(c)) return 'bool';
+    if (c === 'email_verified_at' || c === 'phone_verified_at') return 'verified';
+    if (c.endsWith('_at')) return 'date';
+    if (c === 'price') return 'money';
+    return 'text';
+  }
+  tone(v: any): string {
+    const s = String(v ?? '').toLowerCase();
+    if (['approved', 'active', 'attended', '1', 'true', 'user', 'verified'].includes(s)) return 'green';
+    if (['pending', 'pending_approval', 'pending_category'].includes(s)) return 'amber';
+    if (['rejected', 'cancelled', 'expired', 'no_show', '0', 'false'].includes(s)) return 'red';
+    if (['booked'].includes(s)) return 'blue';
+    if (['admin', 'expert'].includes(s)) return 'purple';
+    return 'gray';
+  }
+  initials(name: any): string {
+    const parts = String(name ?? '?').trim().split(/\s+/).slice(0, 2);
+    return parts.map(p => p.charAt(0).toUpperCase()).join('') || '?';
+  }
+  hue(name: any): number {
+    let h = 0;
+    for (const ch of String(name ?? '')) h = (h * 31 + ch.charCodeAt(0)) % 360;
+    return h;
+  }
+  get headline(): string {
+    const b = Number(this.stats?.bookings_today ?? 0);
+    const p = this.pendingCount;
+    const bookings = `${b} booking${b === 1 ? '' : 's'} today`;
+    if (!p) return `${bookings}, nobody waiting for approval`;
+    return `${bookings}, ${p} sign-up${p === 1 ? '' : 's'} to review`;
+  }
+  get sideStats() { return this.statCards.filter(c => c.key !== 'bookings_today'); }
+
+  get sectionTitle(): string {
+    switch (this.activeSection) {
+      case 'overview': return 'Dashboard';
+      case 'approvals': return 'Pending approvals';
+      case 'send': return 'Send notification';
+      default: return this.active.title;
+    }
   }
 
   // Category dropdowns are built from the class-categories table (admin can add/delete freely)
@@ -205,8 +389,11 @@ export class AdminComponent implements OnInit {
   }
 
   async select(res: ResourceDef) {
-    this.activeSection = 'resource'; // CHANGED
+    this.activeSection = 'resource';
     this.active = res;
+    this.search = '';
+    this.page = 1;
+    this.sidebarOpen = false;
     this.showForm = false;
     this.error = '';
     this.loading = true;
@@ -275,15 +462,15 @@ export class AdminComponent implements OnInit {
       this.error = e?.error?.error || 'Delete failed';
     }
   }
-
-  // CHANGED — pending-account approvals
   async showApprovals() {
     this.activeSection = 'approvals';
+    this.sidebarOpen = false;
     this.showForm = false;
     this.error = '';
     this.approvalsLoading = true;
     try {
       this.pendingApprovals = await this.admin.pendingApprovals();
+      this.pendingCount = this.pendingApprovals.length;
     } catch (e: any) {
       this.error = e?.error?.error || 'Failed to load pending approvals';
       this.pendingApprovals = [];
@@ -294,6 +481,7 @@ export class AdminComponent implements OnInit {
 
   async showSend() {
     this.activeSection = 'send';
+    this.sidebarOpen = false;
     this.showForm = false;
     this.error = '';
     this.notifInfo = '';
@@ -329,10 +517,15 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  private async refreshApprovalsView() {
+    if (this.activeSection === 'overview') await this.showOverview();
+    else await this.showApprovals();
+  }
+
   async approveUser(row: any) {
     try {
       await this.admin.approveUser(row.id);
-      await this.showApprovals();
+      await this.refreshApprovalsView();
     } catch (e: any) {
       this.error = e?.error?.error || 'Approval failed';
     }
@@ -342,7 +535,7 @@ export class AdminComponent implements OnInit {
     if (!confirm(`Reject ${row.name}'s account request?`)) return;
     try {
       await this.admin.rejectUser(row.id);
-      await this.showApprovals();
+      await this.refreshApprovalsView();
     } catch (e: any) {
       this.error = e?.error?.error || 'Rejection failed';
     }

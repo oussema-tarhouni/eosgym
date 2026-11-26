@@ -6,17 +6,30 @@ import { firstValueFrom } from 'rxjs';
 // an environments/ setup — I don't have that file so I couldn't confirm it.
 const API_BASE = 'http://localhost:3000/api';
 
+export interface RegisterData {
+  name: string; email: string; phone: string; password: string;
+  gender?: 'male' | 'female'; age?: number;
+  height_cm?: number | null; weight_kg?: number | null;
+  goals?: string[]; experience?: string; days_per_week?: number;
+}
+
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
   phone: string;
+  gender?: 'male' | 'female' | null;
+  age?: number | null;
+  height_cm?: number | null;
+  weight_kg?: number | string | null;
+  goals?: string | null;
+  experience?: string | null;
+  days_per_week?: number | null;
   avatar: string | null;
   role?: string;
   status?: string;                 // 'pending_category' | 'pending_approval' | 'approved' | 'rejected'
   preferred_category?: string | null;
   email_verified: boolean;
-  phone_verified: boolean;
 }
 
 interface AuthResponse {
@@ -31,9 +44,9 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  async register(name: string, email: string, phone: string, password: string): Promise<AuthResponse> {
+  async register(data: RegisterData): Promise<AuthResponse> {
     const res = await firstValueFrom(
-      this.http.post<AuthResponse>(`${API_BASE}/auth/register`, { name, email, phone, password }, { withCredentials: true })
+      this.http.post<AuthResponse>(`${API_BASE}/auth/register`, data, { withCredentials: true })
     );
     this.accessToken = res.token;
     this.currentUser = res.user;
@@ -53,14 +66,6 @@ export class AuthService {
     const res = await firstValueFrom(this.http.get<AuthUser>(`${API_BASE}/auth/me`));
     this.currentUser = res;
     return res;
-  }
-
-  async sendOtp(): Promise<{ message: string }> {
-    return firstValueFrom(this.http.post<{ message: string }>(`${API_BASE}/auth/send-otp`, {}));
-  }
-
-  async verifyOtp(code: string): Promise<{ message: string }> {
-    return firstValueFrom(this.http.post<{ message: string }>(`${API_BASE}/auth/verify-otp`, { code }));
   }
 
   // CHANGED — category/plan flow

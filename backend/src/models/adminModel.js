@@ -2,39 +2,64 @@ const pool = require("../config/database");
 
 // ---------- STATS ----------
 async function getStats() {
-  const [[users]] = await pool.query("SELECT COUNT(*) AS n FROM users");
-  const [[trainers]] = await pool.query("SELECT COUNT(*) AS n FROM trainers");
-  const [[classes]] = await pool.query("SELECT COUNT(*) AS n FROM classes WHERE starts_at >= NOW()");
-  const [[activeMemberships]] = await pool.query("SELECT COUNT(*) AS n FROM memberships WHERE status = 'active'");
-  const [[bookingsToday]] = await pool.query(
-    "SELECT COUNT(*) AS n FROM bookings b JOIN classes c ON c.id = b.class_id WHERE b.status='booked' AND DATE(c.starts_at) = CURDATE()"
-  );
+  const one = async (sql) => (await pool.query(sql))[0][0].n || 0;
+  const [gender] = await pool.query("SELECT COALESCE(gender,'unknown') AS gender, COUNT(*) AS n FROM users WHERE role <> 'admin' GROUP BY gender");
+  const [signups] = await pool.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d') AS day, COUNT(*) AS n FROM users WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 13 DAY) GROUP BY day ORDER BY day");
+  const [recent] = await pool.query("SELECT id, name, email, status, created_at FROM users ORDER BY created_at DESC LIMIT 6");
   return {
-    users: users.n,
-    trainers: trainers.n,
-    upcoming_classes: classes.n,
-    active_memberships: activeMemberships.n,
-    bookings_today: bookingsToday.n,
+    users: await one("SELECT COUNT(*) AS n FROM users WHERE role <> 'admin'"),
+    new_users_7d: await one("SELECT COUNT(*) AS n FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"),
+    pending_approvals: await one("SELECT COUNT(*) AS n FROM users WHERE status = 'pending_approval'"),
+    trainers: await one("SELECT COUNT(*) AS n FROM trainers"),
+    upcoming_classes: await one("SELECT COUNT(*) AS n FROM classes WHERE starts_at >= NOW()"),
+    active_memberships: await one("SELECT COUNT(*) AS n FROM memberships WHERE status = 'active'"),
+    expiring_7d: await one("SELECT COUNT(*) AS n FROM memberships WHERE status = 'active' AND renews_at BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)"),
+    bookings_today: await one("SELECT COUNT(*) AS n FROM bookings b JOIN classes c ON c.id = b.class_id WHERE b.status='booked' AND DATE(c.starts_at) = CURDATE()"),
+    pending_orders: await one("SELECT COUNT(*) AS n FROM orders WHERE status = 'pending'"),
+    low_stock: await one("SELECT COUNT(*) AS n FROM products WHERE is_active = 1 AND stock <= 5"),
+    membership_revenue_month: await one("SELECT COALESCE(SUM(p.price),0) AS n FROM memberships m JOIN membership_plans p ON p.id = m.plan_id WHERE m.status IN ('active','expired') AND m.started_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')"),
+    store_revenue_month: await one("SELECT COALESCE(SUM(total),0) AS n FROM orders WHERE status IN ('paid','fulfilled') AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')"),
+    gender, signups, recent,
   };
 }
 
 // ---------- USERS ----------
 async function listUsers() {
   const [rows] = await pool.query(
-    "SELECT id, name, email, phone, role, level, status, preferred_category, email_verified_at, phone_verified_at, created_at FROM users ORDER BY created_at DESC"
+    "SELECT id, name, email, phone, gender, age, height_cm, weight_kg, goals, experience, days_per_week, role, level, status, preferred_category, email_verified_at, created_at FROM users ORDER BY created_at DESC"
   );
   return rows;
 }
 
-async function updateUser(id, { name, email, phone, role, level, status, preferred_category }) {
+async function createUser(d, passwordHash) {
+  const cols = ["name", "email", "phone", "password_hash", "role", "level", "status", "preferred_category", "gender", "age", "height_cm", "weight_kg", "goals", "experience", "days_per_week"];
+  const vals = [d.name, d.email, d.phone || null, passwordHash, d.role || "user", d.level || "Initiation", d.status || "approved", d.preferred_category || null,
+    d.gender || null, d.age || null, d.height_cm || null, d.weight_kg || null, d.goals || null, d.experience || null, d.days_per_week || null];
+  const [r] = await pool.execute(`INSERT INTO users (${cols.join(",")}) VALUES (${cols.map(() => "?").join(",")})`, vals);
+  return r.insertId;
+}
+
+async function setUserPassword(id, passwordHash) {
+  const [r] = await pool.execute("UPDATE users SET password_hash = ? WHERE id = ?", [passwordHash, id]);
+  await pool.execute("UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL", [id]);
+  return r.affectedRows > 0;
+}
+
+async function broadcastNotification(message, userIds) {
+  const [r] = userIds && userIds.length
+    ? await pool.query("INSERT INTO notifications (user_id, message) SELECT id, ? FROM users WHERE id IN (?)", [message, userIds])
+    : await pool.query("INSERT INTO notifications (user_id, message) SELECT id, ? FROM users WHERE role <> 'admin' AND status = 'approved'", [message]);
+  return r.affectedRows;
+}
+
+async function updateUser(id, d) {
+  const allowed = ["name", "email", "phone", "role", "level", "status", "preferred_category", "gender", "age", "height_cm", "weight_kg", "goals", "experience", "days_per_week"];
   const fields = [], values = [];
-  if (status !== undefined) { fields.push("status = ?"); values.push(status); }
-  if (preferred_category !== undefined) { fields.push("preferred_category = ?"); values.push(preferred_category || null); }
-  if (name !== undefined) { fields.push("name = ?"); values.push(name); }
-  if (email !== undefined) { fields.push("email = ?"); values.push(email); }
-  if (phone !== undefined) { fields.push("phone = ?"); values.push(phone); }
-  if (role !== undefined) { fields.push("role = ?"); values.push(role); }
-  if (level !== undefined) { fields.push("level = ?"); values.push(level); }
+  for (const k of allowed) {
+    if (d[k] === undefined) continue;
+    fields.push(`${k} = ?`);
+    values.push(d[k] === "" ? null : d[k]);
+  }
   if (!fields.length) return;
   values.push(id);
   await pool.execute(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`, values);
@@ -385,7 +410,7 @@ async function deleteDietLog(id) {
 
 // ---------- NOTIFICATIONS ----------
 async function listNotifications() {
-  const [rows] = await pool.query("SELECT * FROM notifications ORDER BY created_at DESC, id DESC");
+  const [rows] = await pool.query("SELECT n.*, u.name AS user_name FROM notifications n JOIN users u ON u.id = n.user_id ORDER BY n.created_at DESC, n.id DESC LIMIT 500");
   return rows;
 }
 async function createNotification({ user_id, message, is_read }) {
@@ -415,7 +440,7 @@ module.exports = {
   listDietLogs, createDietLog, updateDietLog, deleteDietLog,
   listNotifications, createNotification, updateNotification, deleteNotification,
   getStats,
-  listUsers, updateUser, deleteUser,
+  listUsers, updateUser, deleteUser, createUser, setUserPassword, broadcastNotification,
   listTrainers, createTrainer, updateTrainer, deleteTrainer,
   listClasses, createClass, updateClass, deleteClass,
   listPlans, createPlan, updatePlan, deletePlan,
